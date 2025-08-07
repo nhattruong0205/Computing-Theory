@@ -1,0 +1,99 @@
+\documentclass{article}
+\usepackage{graphicx} 
+\usepackage{fullpage}
+\usepackage{amssymb,amsmath,amsthm,mathtools}
+
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{thm}[theorem]{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{cor}[theorem]{Corollary}
+\newtheorem{obs}[theorem]{Observation}
+\newtheorem{conj}[theorem]{Conjecture}
+\newtheorem{dfn}[theorem]{Definition}
+\newtheorem{prob}[theorem]{Problem}
+\newtheorem{claim}[theorem]{Claim}
+
+
+\title{Generalized Kendall $\tau$}
+\author{ }
+\date{June 2025}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introduction}
+Generalized Kendall Tau for partial rankings[1]
+
+\section*{Methods}
+
+The sorting problem (given a permutation $\pi$, find min number of gen.adjacent translocations to transform $\pi$ to 1,2,..,n) is NP-hard. 
+It is interesting to find permutations with max distance to 1,2,..,n.
+Or in general, find distances to 1,2,..,n for all permutations of [1,n]. 
+
+Algorithm:
+
+Make a list of all permutations of $\{1,2,..,n\}$ and set distance $D[\pi]$ as 0 for $\pi=(1,2,..,n)$ and a large int $X$ for other permutations $\pi$.
+
+for dist=0 by 1 to infty\\
+for each permutation $\pi$\\
+if $D[\pi]=dist$ try every possible adjacent translocation on $\pi$ making a new permutation $\sigma$.\\
+If $D[\sigma]=X$ set $D[\sigma]=dist+1$.\\
+If $\pi$ is not found for dist then stop
+
+\section*{Glossary}
+\textbf{Translocation:} swapping two consecutive sequences. \\
+\textbf{Translocation distance:} is the minimum number of operation that are needed to transform one permutation into another. \\
+\textbf{Partial Ranking:} 
+
+\vspace{0.5cm}
+
+% ---------------------------------
+\section{Results}
+
+Let $d(\pi,\sigma)$ be the translocation distance between permutations $\pi $ and $\sigma $.
+
+\begin{theorem}
+$d(\pi,\sigma)=n-1$ for $\pi=(1,2,\dots,n)$ and $\sigma=(n,n-1,\dots,1)$.
+\end{theorem}
+
+\begin{proof}
+{\em Upper bound}. 
+We prove by induction that $d(\pi,\sigma)\le n-1$. 
+
+\textbf{Base case}. If $n=1$ then $\pi$ = (1) = $\sigma$ and no translocation needed.
+
+\textbf{Inductive step}.
+Suppose $d(\pi,\sigma)\le n-1$.
+Let $\pi'=(1,2,\dots,n-1)$ and $\sigma'=(n-1,n-2,\dots,1)$.
+We prove $d(\pi,\sigma)\le n-1$ assuming that $d(\pi',\sigma')\le n-2$.
+
+We make a translocation of $n$ and $(1,2,...,n-1)$ in $\pi$ producing permutation $(n, 1, 2, \dots, n-1)$.
+It is $\pi'$ after $n$ and we can apply $n-2$ translocations to transform it to $\sigma'$ by induction hypothesis. 
+This results in $n-1$ translocations transforming $\pi$ to $\sigma$.
+
+{\em Lower bound}. ...
+\end{proof}
+
+When n = 2, we have 1 distinct ways of using exact 2 adjacent interval translocation:
+
+12 $->$ 21
+
+When n = 3, we have 4 distinct ways of using exact 1 adjacent interval translocation:
+
+123 $->$ 312 $->$ 321
+
+123 $->$ 213 $->$ 321
+
+123 $->$ 132 $->$ 321
+
+123 $->$ 231 $->$ 321
+
+
+\section*{Bibliography}
+[1] Yoo Y, Escobedo AR. A new binary programming formulation and social
+choice property for Kemeny rank aggregation. Decision Analysis 2021;18(4):
+296–320.
+
+\end{document}

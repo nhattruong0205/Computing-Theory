@@ -1,0 +1,621 @@
+<?xml version="1.0"?>
+<!DOCTYPE ipe SYSTEM "ipe.dtd">
+<ipe version="70218" creator="Python script">
+<info created="D:20250131000000" modified="D:20250131000000"/>
+<preamble>\usepackage{amsmath}
+\usepackage{amssymb}</preamble>
+<ipestyle name="basic">
+<symbol name="arrow/arc(spx)">
+<path stroke="sym-stroke" fill="sym-stroke" pen="sym-pen">
+0 0 m
+-1 0.333 l
+-1 -0.333 l
+h
+</path>
+</symbol>
+<pen name="fat" value="1.2"/>
+<pen name="heavier" value="0.8"/>
+<pen name="ultrafat" value="2"/>
+</ipestyle>
+<page>
+<layer name="alpha"/>
+<view layers="alpha" active="alpha"/>
+<use layer="alpha" name="mark/circle(sx)" pos="300 375" size="large" stroke="black"/>
+<text transformations="translations" pos="300 375" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">1243</text>
+<use name="mark/circle(sx)" pos="300 355" size="large" stroke="black"/>
+<text transformations="translations" pos="300 355" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">1324</text>
+<use name="mark/circle(sx)" pos="300 335" size="large" stroke="black"/>
+<text transformations="translations" pos="300 335" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">2134</text>
+<use name="mark/circle(sx)" pos="300 315" size="large" stroke="black"/>
+<text transformations="translations" pos="300 315" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">2341</text>
+<use name="mark/circle(sx)" pos="300 295" size="large" stroke="black"/>
+<text transformations="translations" pos="300 295" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">4123</text>
+<use name="mark/circle(sx)" pos="300 525" size="large" stroke="black"/>
+<text transformations="translations" pos="300 525" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">1342</text>
+<use name="mark/circle(sx)" pos="300 505" size="large" stroke="black"/>
+<text transformations="translations" pos="300 505" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">1423</text>
+<use name="mark/circle(sx)" pos="300 485" size="large" stroke="black"/>
+<text transformations="translations" pos="300 485" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">2314</text>
+<use name="mark/circle(sx)" pos="300 465" size="large" stroke="black"/>
+<text transformations="translations" pos="300 465" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">3124</text>
+<use name="mark/circle(sx)" pos="300 445" size="large" stroke="black"/>
+<text transformations="translations" pos="300 445" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">3412</text>
+<use name="mark/circle(sx)" pos="400 375" size="large" stroke="black"/>
+<text transformations="translations" pos="400 375" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">2143</text>
+<use name="mark/circle(sx)" pos="400 355" size="large" stroke="black"/>
+<text transformations="translations" pos="400 355" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">2431</text>
+<use name="mark/circle(sx)" pos="400 335" size="large" stroke="black"/>
+<text transformations="translations" pos="400 335" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">3241</text>
+<use name="mark/circle(sx)" pos="400 315" size="large" stroke="black"/>
+<text transformations="translations" pos="400 315" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">4132</text>
+<use name="mark/circle(sx)" pos="400 295" size="large" stroke="black"/>
+<text transformations="translations" pos="400 295" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">4213</text>
+<use name="mark/circle(sx)" pos="400 525" size="large" stroke="black"/>
+<text transformations="translations" pos="400 525" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">1432</text>
+<use name="mark/circle(sx)" pos="400 505" size="large" stroke="black"/>
+<text transformations="translations" pos="400 505" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">3214</text>
+<use name="mark/circle(sx)" pos="400 485" size="large" stroke="black"/>
+<text transformations="translations" pos="400 485" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">3421</text>
+<use name="mark/circle(sx)" pos="400 465" size="large" stroke="black"/>
+<text transformations="translations" pos="400 465" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">4231</text>
+<use name="mark/circle(sx)" pos="400 445" size="large" stroke="black"/>
+<text transformations="translations" pos="400 445" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">4312</text>
+<use name="mark/circle(sx)" pos="225 450" size="large" stroke="black"/>
+<text transformations="translations" pos="225 450" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">1234</text>
+<use name="mark/circle(sx)" pos="350 275" size="large" stroke="black"/>
+<text transformations="translations" pos="350 275" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">2413</text>
+<use name="mark/circle(sx)" pos="350 575" size="large" stroke="black"/>
+<text transformations="translations" pos="350 575" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">3142</text>
+<use name="mark/circle(sx)" pos="475 450" size="large" stroke="black"/>
+<text transformations="translations" pos="475 450" stroke="black" type="label" width="19.925" height="6.42" depth="0" halign="center" valign="center">4321</text>
+<path stroke="0.5">
+300 375 m
+400 525 l
+</path>
+<path stroke="0.5">
+300 375 m
+400 445 l
+</path>
+<path stroke="0.5">
+300 375 m
+350 275 l
+</path>
+<path stroke="0.5">
+300 375 m
+225 450 l
+</path>
+<path stroke="0.5">
+300 355 m
+400 525 l
+</path>
+<path stroke="0.5">
+300 355 m
+400 505 l
+</path>
+<path stroke="0.5">
+300 355 m
+350 275 l
+</path>
+<path stroke="0.5">
+300 355 m
+225 450 l
+</path>
+<path stroke="0.5">
+300 335 m
+400 505 l
+</path>
+<path stroke="0.5">
+300 335 m
+400 485 l
+</path>
+<path stroke="0.5">
+300 335 m
+350 275 l
+</path>
+<path stroke="0.5">
+300 335 m
+225 450 l
+</path>
+<path stroke="0.5">
+300 315 m
+400 485 l
+</path>
+<path stroke="0.5">
+300 315 m
+400 465 l
+</path>
+<path stroke="0.5">
+300 315 m
+350 275 l
+</path>
+<path stroke="0.5">
+300 315 m
+225 450 l
+</path>
+<path stroke="0.5">
+300 295 m
+400 465 l
+</path>
+<path stroke="0.5">
+300 295 m
+400 445 l
+</path>
+<path stroke="0.5">
+300 295 m
+350 275 l
+</path>
+<path stroke="0.5">
+300 295 m
+225 450 l
+</path>
+<path stroke="0.5">
+300 525 m
+400 315 l
+</path>
+<path stroke="0.5">
+300 525 m
+400 295 l
+</path>
+<path stroke="0.5">
+300 525 m
+350 575 l
+</path>
+<path stroke="0.5">
+300 525 m
+225 450 l
+</path>
+<path stroke="0.5">
+300 505 m
+400 375 l
+</path>
+<path stroke="0.5">
+300 505 m
+400 295 l
+</path>
+<path stroke="0.5">
+300 505 m
+350 575 l
+</path>
+<path stroke="0.5">
+300 505 m
+225 450 l
+</path>
+<path stroke="0.5">
+300 485 m
+400 375 l
+</path>
+<path stroke="0.5">
+300 485 m
+400 355 l
+</path>
+<path stroke="0.5">
+300 485 m
+350 575 l
+</path>
+<path stroke="0.5">
+300 485 m
+225 450 l
+</path>
+<path stroke="0.5">
+300 465 m
+400 355 l
+</path>
+<path stroke="0.5">
+300 465 m
+400 335 l
+</path>
+<path stroke="0.5">
+300 465 m
+350 575 l
+</path>
+<path stroke="0.5">
+300 465 m
+225 450 l
+</path>
+<path stroke="0.5">
+300 445 m
+400 335 l
+</path>
+<path stroke="0.5">
+300 445 m
+400 315 l
+</path>
+<path stroke="0.5">
+300 445 m
+350 575 l
+</path>
+<path stroke="0.5">
+300 445 m
+225 450 l
+</path>
+<path stroke="0.5">
+400 375 m
+350 275 l
+</path>
+<path stroke="0.5">
+400 375 m
+475 450 l
+</path>
+<path stroke="0.5">
+400 355 m
+350 275 l
+</path>
+<path stroke="0.5">
+400 355 m
+475 450 l
+</path>
+<path stroke="0.5">
+400 335 m
+350 275 l
+</path>
+<path stroke="0.5">
+400 335 m
+475 450 l
+</path>
+<path stroke="0.5">
+400 315 m
+350 275 l
+</path>
+<path stroke="0.5">
+400 315 m
+475 450 l
+</path>
+<path stroke="0.5">
+400 295 m
+350 275 l
+</path>
+<path stroke="0.5">
+400 295 m
+475 450 l
+</path>
+<path stroke="0.5">
+400 525 m
+350 575 l
+</path>
+<path stroke="0.5">
+400 525 m
+475 450 l
+</path>
+<path stroke="0.5">
+400 505 m
+350 575 l
+</path>
+<path stroke="0.5">
+400 505 m
+475 450 l
+</path>
+<path stroke="0.5">
+400 485 m
+350 575 l
+</path>
+<path stroke="0.5">
+400 485 m
+475 450 l
+</path>
+<path stroke="0.5">
+400 465 m
+350 575 l
+</path>
+<path stroke="0.5">
+400 465 m
+475 450 l
+</path>
+<path stroke="0.5">
+400 445 m
+350 575 l
+</path>
+<path stroke="0.5">
+400 445 m
+475 450 l
+</path>
+<path stroke="0.3" pen="heavier">
+300 375 m
+305 365
+300 355 c
+</path>
+<path stroke="0.3" pen="heavier">
+300 375 m
+305 335
+300 295 c
+</path>
+<path stroke="0.3" pen="heavier">
+300 355 m
+305 345
+300 335 c
+</path>
+<path stroke="0.3" pen="heavier">
+300 335 m
+305 325
+300 315 c
+</path>
+<path stroke="0.3" pen="heavier">
+300 315 m
+305 305
+300 295 c
+</path>
+<path stroke="0.3" pen="heavier">
+300 525 m
+305 515
+300 505 c
+</path>
+<path stroke="0.3" pen="heavier">
+300 525 m
+305 485
+300 445 c
+</path>
+<path stroke="0.3" pen="heavier">
+300 505 m
+305 495
+300 485 c
+</path>
+<path stroke="0.3" pen="heavier">
+300 485 m
+305 475
+300 465 c
+</path>
+<path stroke="0.3" pen="heavier">
+300 465 m
+305 455
+300 445 c
+</path>
+<path stroke="0.3" pen="heavier">
+400 375 m
+405 365
+400 355 c
+</path>
+<path stroke="0.3" pen="heavier">
+400 375 m
+405 335
+400 295 c
+</path>
+<path stroke="0.3" pen="heavier">
+400 355 m
+405 345
+400 335 c
+</path>
+<path stroke="0.3" pen="heavier">
+400 335 m
+405 325
+400 315 c
+</path>
+<path stroke="0.3" pen="heavier">
+400 315 m
+405 305
+400 295 c
+</path>
+<path stroke="0.3" pen="heavier">
+400 525 m
+405 515
+400 505 c
+</path>
+<path stroke="0.3" pen="heavier">
+400 525 m
+405 485
+400 445 c
+</path>
+<path stroke="0.3" pen="heavier">
+400 505 m
+405 495
+400 485 c
+</path>
+<path stroke="0.3" pen="heavier">
+400 485 m
+405 475
+400 465 c
+</path>
+<path stroke="0.3" pen="heavier">
+400 465 m
+405 455
+400 445 c
+</path>
+<path stroke="0 0 1" pen="fat">
+300 375 m
+350 370
+400 375 c
+</path>
+<path stroke="0 0 1" pen="fat">
+300 375 m
+349.019 360.097
+400 355 c
+</path>
+<path stroke="0 0 1" pen="fat">
+300 355 m
+349.019 340.097
+400 335 c
+</path>
+<path stroke="0 0 1" pen="fat">
+300 355 m
+348.143 330.358
+400 315 c
+</path>
+<path stroke="0 0 1" pen="fat">
+300 335 m
+351.857 350.358
+400 375 c
+</path>
+<path stroke="0 0 1" pen="fat">
+300 335 m
+348.143 310.358
+400 295 c
+</path>
+<path stroke="0 0 1" pen="fat">
+300 315 m
+351.857 330.358
+400 355 c
+</path>
+<path stroke="0 0 1" pen="fat">
+300 315 m
+350.981 320.097
+400 335 c
+</path>
+<path stroke="0 0 1" pen="fat">
+300 295 m
+350.981 300.097
+400 315 c
+</path>
+<path stroke="0 0 1" pen="fat">
+300 295 m
+350 290
+400 295 c
+</path>
+<path stroke="0 0.8 0" pen="fat">
+300 525 m
+350 530
+400 525 c
+</path>
+<path stroke="0 0.8 0" pen="fat">
+300 525 m
+351.857 509.642
+400 485 c
+</path>
+<path stroke="0 0.8 0" pen="fat">
+300 505 m
+349.019 519.903
+400 525 c
+</path>
+<path stroke="0 0.8 0" pen="fat">
+300 505 m
+351.857 489.642
+400 465 c
+</path>
+<path stroke="0 0.8 0" pen="fat">
+300 485 m
+349.019 499.903
+400 505 c
+</path>
+<path stroke="0 0.8 0" pen="fat">
+300 485 m
+350.981 479.903
+400 465 c
+</path>
+<path stroke="0 0.8 0" pen="fat">
+300 465 m
+348.143 489.642
+400 505 c
+</path>
+<path stroke="0 0.8 0" pen="fat">
+300 465 m
+350.981 459.903
+400 445 c
+</path>
+<path stroke="0 0.8 0" pen="fat">
+300 445 m
+348.143 469.642
+400 485 c
+</path>
+<path stroke="0 0.8 0" pen="fat">
+300 445 m
+350 450
+400 445 c
+</path>
+<path stroke="1 0 0" pen="ultrafat">
+300 375 m
+315 440
+300 505 c
+</path>
+<path stroke="1 0 0" pen="ultrafat">
+300 375 m
+315 420
+300 465 c
+</path>
+<path stroke="1 0 0" pen="ultrafat">
+300 355 m
+315 440
+300 525 c
+</path>
+<path stroke="1 0 0" pen="ultrafat">
+300 355 m
+315 410
+300 465 c
+</path>
+<path stroke="1 0 0" pen="ultrafat">
+300 335 m
+315 430
+300 525 c
+</path>
+<path stroke="1 0 0" pen="ultrafat">
+300 335 m
+315 410
+300 485 c
+</path>
+<path stroke="1 0 0" pen="ultrafat">
+300 315 m
+315 400
+300 485 c
+</path>
+<path stroke="1 0 0" pen="ultrafat">
+300 315 m
+315 380
+300 445 c
+</path>
+<path stroke="1 0 0" pen="ultrafat">
+300 295 m
+315 400
+300 505 c
+</path>
+<path stroke="1 0 0" pen="ultrafat">
+300 295 m
+315 370
+300 445 c
+</path>
+<path stroke="0.5 0 0.5" pen="ultrafat">
+400 375 m
+385 450
+400 525 c
+</path>
+<path stroke="0.5 0 0.5" pen="ultrafat">
+400 375 m
+385 440
+400 505 c
+</path>
+<path stroke="0.5 0 0.5" pen="ultrafat">
+400 355 m
+385 410
+400 465 c
+</path>
+<path stroke="0.5 0 0.5" pen="ultrafat">
+400 355 m
+385 400
+400 445 c
+</path>
+<path stroke="0.5 0 0.5" pen="ultrafat">
+400 335 m
+385 420
+400 505 c
+</path>
+<path stroke="0.5 0 0.5" pen="ultrafat">
+400 335 m
+385 410
+400 485 c
+</path>
+<path stroke="0.5 0 0.5" pen="ultrafat">
+400 315 m
+385 420
+400 525 c
+</path>
+<path stroke="0.5 0 0.5" pen="ultrafat">
+400 315 m
+385 380
+400 445 c
+</path>
+<path stroke="0.5 0 0.5" pen="ultrafat">
+400 295 m
+385 390
+400 485 c
+</path>
+<path stroke="0.5 0 0.5" pen="ultrafat">
+400 295 m
+385 380
+400 465 c
+</path>
+<text transformations="translations" pos="225 490" stroke="black" type="label" width="12.814" height="6.808" depth="0" halign="center" valign="baseline" style="math">G1</text>
+<text transformations="translations" pos="300 415" stroke="black" type="label" width="12.772" height="6.808" depth="0" halign="center" valign="baseline" style="math">F1</text>
+<text transformations="translations" pos="300 565" stroke="black" type="label" width="12.772" height="6.808" depth="0" halign="center" valign="baseline" style="math">F2</text>
+<text transformations="translations" pos="350 315" stroke="black" type="label" width="12.814" height="6.808" depth="0" halign="center" valign="baseline" style="math">G4</text>
+<text transformations="translations" pos="350 615" stroke="black" type="label" width="12.814" height="6.808" depth="0" halign="center" valign="baseline" style="math">G5</text>
+<text transformations="translations" pos="400 415" stroke="black" type="label" width="14.072" height="6.808" depth="0" halign="center" valign="baseline" style="math">H1</text>
+<text transformations="translations" pos="400 565" stroke="black" type="label" width="14.072" height="6.808" depth="0" halign="center" valign="baseline" style="math">H2</text>
+<text transformations="translations" pos="475 490" stroke="black" type="label" width="12.814" height="6.808" depth="0" halign="center" valign="baseline" style="math">G8</text>
+<text matrix="0 1 -1 0 660.498 300.498" transformations="translations" pos="300 550" stroke="black" type="label" valign="baseline">Permutation Graph with Inter-Group Connections</text>
+</page>
+</ipe>
