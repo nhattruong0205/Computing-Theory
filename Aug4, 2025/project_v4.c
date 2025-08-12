@@ -529,48 +529,48 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
     }
     printf("Number of bad permutation: %d\n", count);
 }
-// Run ComputeTDistanceFromIdentity
-int main()
-{
-
-    n = 10;
-    int *pi = (int *)malloc(n * sizeof(int));
-    initialize_identity_permutation(pi, n);
-
-    int *distance_array = ComputeTDistanceFromIdentity(n);
-
-    long long size = factorial(n);
-    printBadTranslocationFromIdentity(n, distance_array);
-
-    // unrank1(n,3, pi);
-    // print_array(pi, n);
-    // printf("Distance: %d\n", distance_array[23]);
-}
-
+// // Run ComputeTDistanceFromIdentity
 // int main()
 // {
-//     clock_t start_time = clock();
 
-//     n = 10;
+//     n = 8;
 //     int *pi = (int *)malloc(n * sizeof(int));
 //     initialize_identity_permutation(pi, n);
 
 //     int *distance_array = ComputeTDistanceFromIdentity(n);
 
 //     long long size = factorial(n);
-//     // print_D(n, distance_array, size);
+//     printBadTranslocationFromIdentity(n, distance_array);
 
-//     int max_dist = get_max_distance(distance_array, size);
-//     printf("Maximum reachable distance = %d\n", max_dist);
-
-//     unrank1(n, 4, pi);
-//     print_array(pi, n);
-//     printf("Distance: %d", distance_array[4]);
-
-//     clock_t end_time = clock();
-//     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-
-//     printf("\nTotal program execution time: %.3f seconds\n", total_program_time);
-
-//     return 0;
+//     // unrank1(n,3, pi);
+//     // print_array(pi, n);
+//     // printf("Distance: %d\n", distance_array[23]);
 // }
+
+int main()
+{
+    clock_t start_time = clock();
+
+    n = 7;
+    int *pi = (int *)malloc(n * sizeof(int));
+    initialize_identity_permutation(pi, n);
+
+    int *distance_array = ComputeTDistanceFromIdentity(n);
+
+    long long size = factorial(n);
+    // print_D(n, distance_array, size);
+
+    int max_dist = get_max_distance(distance_array, size);
+    printf("Maximum reachable distance = %d\n", max_dist);
+
+    // unrank1(n, 4, pi);
+    // print_array(pi, n);
+    // printf("Distance: %d", distance_array[4]);
+
+    clock_t end_time = clock();
+    double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+
+    printf("\nTotal program execution time: %.3f seconds\n", total_program_time);
+
+    return 0;
+}
