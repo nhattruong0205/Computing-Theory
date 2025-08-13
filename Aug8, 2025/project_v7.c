@@ -1,4 +1,4 @@
-// Updated from project_v5.c where I'll not recompute visiting permutation where I checked if it's exist, not adding it to the queue meaning that its translocation permutation will not be there as well.
+// Updated from project_v7.c where I added function to calculate cycle and maximize the number of odd cycles
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -62,47 +62,31 @@ int longest_increasing_contiguous_subsequence(int *arr, int n)
     return max_len;
 }
 
-int computeMaxLen(int pi[])
+// ----------------------- Helper function for algo 2: making maximimum number of odd cycle --------
+
+// Function to create a breakpoint graph from a given permutation
+int *creatingBreakpointGraph(int arr[], int size)
 {
-    int tmp[MAX_N];
-    int tmp_inv[MAX_N];
-    int max_len = 0;
-    for (int i = 0; i < n; ++i)
-        for (int j = i + 1; j < n; ++j)
-            for (int k = j; k < n; ++k)
-            {
-                /* Build translocated permutation */
-                int idx = 0;
+    // Allocate memory for result array of double size
+    int *result = (int *)malloc(2 * size * sizeof(int));
 
-                /* 1. Prefix: [0..i-1] */
-                for (int x = 0; x < i; ++x)
-                    tmp[idx++] = pi[x];
+    // Check if memory allocation was successful
+    if (result == NULL)
+    {
+        printf("Memory allocation failed!\n");
+        return NULL;
+    }
 
-                /* 2. Block: [j..k] */
-                for (int x = j; x <= k; ++x)
-                    tmp[idx++] = pi[x];
+    // For each element in the original permutation
+    for (int i = 0; i < size; i++)
+    {
+        // Map element arr[i] to positions 2*arr[i]-1 and 2*arr[i]
+        result[2 * i] = 2 * arr[i] - 1; // 2i-1
+        result[2 * i + 1] = 2 * arr[i]; // 2i
+    }
 
-                /* 3. Middle: [i..j-1] */
-                for (int x = i; x < j; ++x)
-                    tmp[idx++] = pi[x];
-
-                /* 4. Suffix: [k+1..n-1] */
-                for (int x = k + 1; x < n; ++x)
-                    tmp[idx++] = pi[x];
-
-                // printf("Its neighbors");
-                // print_array(tmp, n);
-                // printf("\n");
-
-                int neighbor_sub_len = longest_increasing_contiguous_subsequence(tmp, n);
-                if (neighbor_sub_len > max_len)
-                {
-                    max_len = neighbor_sub_len;
-                }
-            }
-    return max_len;
+    return result;
 }
-
 // ------------------------End of help function-----
 
 //------------- Begin of queue functions----------------
@@ -474,6 +458,47 @@ int *ComputeTDistanceFromIdentity(int n)
     return D;
 }
 
+int computeMaxLen(int pi[])
+{
+    int tmp[MAX_N];
+    int tmp_inv[MAX_N];
+    int max_len = 0;
+    for (int i = 0; i < n; ++i)
+        for (int j = i + 1; j < n; ++j)
+            for (int k = j; k < n; ++k)
+            {
+                /* Build translocated permutation */
+                int idx = 0;
+
+                /* 1. Prefix: [0..i-1] */
+                for (int x = 0; x < i; ++x)
+                    tmp[idx++] = pi[x];
+
+                /* 2. Block: [j..k] */
+                for (int x = j; x <= k; ++x)
+                    tmp[idx++] = pi[x];
+
+                /* 3. Middle: [i..j-1] */
+                for (int x = i; x < j; ++x)
+                    tmp[idx++] = pi[x];
+
+                /* 4. Suffix: [k+1..n-1] */
+                for (int x = k + 1; x < n; ++x)
+                    tmp[idx++] = pi[x];
+
+                // printf("Its neighbors");
+                // print_array(tmp, n);
+                // printf("\n");
+
+                int neighbor_sub_len = longest_increasing_contiguous_subsequence(tmp, n);
+                if (neighbor_sub_len > max_len)
+                {
+                    max_len = neighbor_sub_len;
+                }
+            }
+    return max_len;
+}
+
 void printBadTranslocationFromIdentity(int n, int *distance_array)
 {
     int *pi = (int *)malloc(n * sizeof(int));
@@ -599,57 +624,25 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
 
 int main()
 {
+    int size = 7; // Size of the input array
+
     clock_t start_time = clock();
 
-    printf("Enter the value of n (permutation length): ");
-    scanf("%d", &n);
+    int input[] = {1, 6, 5, 4, 7, 3, 2}; // Input permutation
 
-    if (n <= 0 || n > MAX_N)
+    printf("\nInput permutation: ");
+    print_array(input, size);
+
+    int *result = creatingBreakpointGraph(input, size);
+    if (result != NULL)
     {
-        printf("Error: n must be between 1 and %d\n", MAX_N);
-        return 1;
+        printf("Breakpoint graph representation: ");
+        print_array(result, size * 2);
+        free(result); // Free the allocated memory
     }
-
-    printf("Starting computation for n=%d\n", n);
-    printf("This will process %lld permutations\n", factorial(n));
-
-    // Allocate memory
-    if (!allocate_memory(n))
-    {
-        printf("Memory allocation failed. Exiting.\n");
-        return 1;
-    }
-
-    int *pi = (int *)malloc(n * sizeof(int));
-    if (!pi)
-    {
-        printf("Failed to allocate pi array\n");
-        free_memory();
-        return 1;
-    }
-    initialize_identity_permutation(pi, n);
-
-    // Run the main algorithm
-    int *distance_array = ComputeTDistanceFromIdentity(n);
-    if (!distance_array)
-    {
-        printf("Failed to compute distance array\n");
-        free(pi);
-        free_memory();
-        return 1;
-    }
-
-    // Get results
-    int max_dist = get_max_distance(FACT);
-    printf("Maximum reachable distance = %d\n", max_dist);
 
     clock_t end_time = clock();
     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
 
     printf("\nTotal program execution time: %.3f seconds\n", total_program_time);
-
-    // Cleanup
-    free(pi);
-    free_memory();
-    return 0;
 }
