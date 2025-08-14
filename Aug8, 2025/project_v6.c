@@ -630,7 +630,7 @@ int main()
     initialize_identity_permutation(pi, n);
 
     // Run the main algorithm
-    int *distance_array = ComputeTDistanceFromIdentity(n);
+    int *distance_array = ComputeTDistnceFromIdentity(n);
     if (!distance_array)
     {
         printf("Failed to compute distance array\n");
