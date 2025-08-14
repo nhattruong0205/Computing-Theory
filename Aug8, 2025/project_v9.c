@@ -46,6 +46,27 @@ void shift_permutation_by_one(int *src, int *dest, int n)
     }
 }
 
+void translocate(const int *src, int *dst, int n, int i, int j, int k)
+{
+    int idx = 0;
+
+    // 1. Prefix: [0..i-1]
+    for (int x = 0; x < i; ++x)
+        dst[idx++] = src[x];
+
+    // 2. Block: [j..k]
+    for (int x = j; x <= k; ++x)
+        dst[idx++] = src[x];
+
+    // 3. Middle: [i..j-1]
+    for (int x = i; x < j; ++x)
+        dst[idx++] = src[x];
+
+    // 4. Suffix: [k+1..n-1]
+    for (int x = k + 1; x < n; ++x)
+        dst[idx++] = src[x];
+}
+
 // ------------------------End of help function-----
 
 // ------------------------ Find max odd cycle-------------
@@ -85,7 +106,7 @@ static void add_edge(int (*adj)[2], int *deg, int u, int v, const char *label)
     }
     adj[u][deg[u]++] = v;
     adj[v][deg[v]++] = u;
-    printf("%s: %d -- %d\n", label, u, v);
+    // printf("%s: %d -- %d\n", label, u, v);
 }
 
 static void build_black_edges_from_perm(int (*adj)[2], int *deg, int *pi, int n)
@@ -207,7 +228,9 @@ void print_cycles(int (*adj)[2], int n)
     }
 
     free(vis);
-} // ------------------------ End of find max cycle-----------
+}
+
+// ------------------------ End of find max cycle-----------
 
 //------------- Begin of queue functions----------------
 // Function to initialize the queue
@@ -578,6 +601,57 @@ int *ComputeTDistanceFromIdentity(int n)
     return D;
 }
 
+void reset_graph(int n, int adj[][2], int *deg)
+{
+    for (int v = 0; v <= 2 * n; v++)
+    {
+        deg[v] = 0;
+        adj[v][0] = 0;
+        adj[v][1] = 0;
+    }
+}
+
+int computeMostOddCycle(int *perm, int n)
+{
+    int *tmp = malloc(n * sizeof(int));
+    int *best_perm = malloc(n * sizeof(int));
+    int best_i = -1, best_j = -1, best_k = -1;
+    int max_odd = -1;
+
+    int (*adj)[2] = calloc(2 * n + 1, sizeof *adj);
+    int *deg = calloc(2 * n + 1, sizeof *deg);
+
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = i + 1; j < n; ++j)
+        {
+            for (int k = j; k < n; ++k)
+            {
+                translocate(perm, tmp, n, i, j, k);
+
+                memset(adj, 0, (2 * n + 1) * 2 * sizeof(int));
+                memset(deg, 0, (2 * n + 1) * sizeof(int));
+
+                build_black_edges_from_perm(adj, deg, tmp, n);
+                build_gray_edges_identity(adj, deg, n);
+
+                int odd = count_odd_cycles(adj, n);
+
+                if (odd > max_odd)
+                {
+                    max_odd = odd;
+                    best_i = i;
+                    best_j = j;
+                    best_k = k;
+                    memcpy(best_perm, tmp, n * sizeof(int));
+                }
+            }
+        }
+    }
+
+    return max_odd;
+}
+
 void printBadTranslocationFromIdentity(int n, int *distance_array)
 {
     int *pi = (int *)malloc(n * sizeof(int));
@@ -586,7 +660,7 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
     long long size = factorial(n);
 
     initialize_identity_permutation(pi, n);
-    print_array(pi, n);
+    // print_array(pi, n);
     compute_inverse(pi, pi_inv, n);
     // print_array(pi_inv, n);
 
@@ -620,17 +694,18 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
             // printf("\n");
 
             current_distance = distance_array[index];
+            // printf("Current distance: %d", current_distance);
             //------------ Added
             int (*adj)[2] = calloc(2 * n + 1, sizeof *adj);
             int *deg = calloc(2 * n + 1, sizeof *deg);
 
             shift_permutation_by_one(pi, pi_shifted, n);
-
-            // printf("Building edges...\n");
+            // print_array(pi_shifted, n);
+            //  printf("Building edges...\n");
             build_black_edges_from_perm(adj, deg, pi_shifted, n); // e.g., 2--11, 12--9, ...
             build_gray_edges_identity(adj, deg, n);               // e.g., 2--3, 4--5, ..., 14--1
-            current_maxCycle = count_odd_cycles(pi_shifted, n);
-
+            current_maxCycle = count_odd_cycles(adj, n);
+            // printf("Current max cycle\n: %d", current_maxCycle);
             //------------ Added
 
             int tmp[MAX_N];
@@ -668,9 +743,10 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
                         shift_permutation_by_one(tmp, tmp_shift, n);
 
                         // printf("Building edges...\n");
+                        reset_graph(n, adj, deg);
                         build_black_edges_from_perm(adj, deg, tmp_shift, n); // e.g., 2--11, 12--9, ...
                         build_gray_edges_identity(adj, deg, n);              // e.g., 2--3, 4--5, ..., 14--1
-                        neighbor_maxCycle = count_odd_cycles(tmp_shift, n);
+                        neighbor_maxCycle = count_odd_cycles(adj, n);
 
                         if (neighbor_maxCycle > max_cycle)
                         {
@@ -682,21 +758,19 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
 
                             shift_permutation_by_one(tmp, tmp_shift, n);
 
+                            reset_graph(n, adj, deg);
+
                             // printf("Building edges...\n");
                             build_black_edges_from_perm(adj, deg, tmp_shift, n); // e.g., 2--11, 12--9, ...
                             build_gray_edges_identity(adj, deg, n);              // e.g., 2--3, 4--5, ..., 14--1
-                            max_cycle_2 = count_odd_cycles(tmp_shift, n);
+
+                            max_cycle_2 = computeMostOddCycle(tmp_shift, n);
                         }
                         else
                         {
                             if (neighbor_maxCycle == max_cycle)
                             {
-                                shift_permutation_by_one(tmp, tmp_shift, n);
-
-                                // printf("Building edges...\n");
-                                build_black_edges_from_perm(adj, deg, tmp_shift, n); // e.g., 2--11, 12--9, ...
-                                build_gray_edges_identity(adj, deg, n);              // e.g., 2--3, 4--5, ..., 14--1
-                                int neighbor_2_maxCycle = count_odd_cycles(tmp_shift, n);
+                                int neighbor_2_maxCycle = computeMostOddCycle(tmp_shift, n);
 
                                 if (neighbor_2_maxCycle > max_cycle_2)
                                 {
@@ -705,15 +779,7 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
                                     max_cycle_2 = neighbor_2_maxCycle;
                                 }
                             }
-                            {
-                            }
                         }
-
-                        // printf("Neighbor distance: %d", neighbor_distance);
-                        // printf("Current distance: %d\n", current_distance);
-
-                        // printf("Neighbor sublen: %d", neighbor_sub_len);
-                        // printf("Current sublen: %d\n", current_sub_len);
                     }
             if (distance_array[max_rank] != (distance_array[index] - 1))
             {
@@ -723,7 +789,7 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
 
                 unrank1(n, index, pi);
 
-                // printf("Bad index: %d, %d, %d, %d, %d\n", index, max_len, max_len_2, distance_array[index], distance_array[max_rank]);
+                // printf("Bad index: %d, %d, %d, %d, %d\n", index, max_cycle, max_cycle_2, distance_array[index], distance_array[max_rank]);
                 // print_array(pi, n);
                 neighbor_distance = distance_array[max_rank];
             }
@@ -731,6 +797,45 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
     }
     printf("Number of bad permutation: %d\n", count);
 }
+
+// int main()
+// {
+//     int size;
+
+//     int *dst = (int *)malloc(size * sizeof(int));
+//     // Input the size of the OG permutation
+//     printf("Enter the size of the permutation: ");
+//     scanf("%d", &size);
+
+//     if (size <= 0 || size > MAX_N)
+//     {
+//         printf("Error: Size must be between 1 and %d\n", MAX_N);
+//         return 1;
+//     }
+
+//     int *input = (int *)malloc(size * sizeof(int));
+//     if (!input)
+//     {
+//         printf("Failed to allocate memory for input array\n");
+//         return 1;
+//     }
+//     clock_t start_time = clock();
+
+//     // Input the permutation
+//     printf("Enter the permutation (space-separated): ");
+//     for (int i = 0; i < size; i++)
+//         scanf("%d", &input[i]);
+
+//     int max_cycle = computeMostOddCycle(input, size);
+
+//     printf("Max cycle: %d", max_cycle);
+
+//     clock_t end_time = clock();
+//     double total_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+//     printf("\nExecution time: %.3f seconds\n", total_time);
+
+//     return 0;
+// }
 
 int main()
 {
@@ -775,10 +880,13 @@ int main()
     }
 
     // Get results
-    int *max_dist = get_max_distance(n);
+    int max_dist = get_max_distance(FACT);
     printf("Maximum reachable distance = %d\n", max_dist);
 
-    printBadTranslocationFromIdentity(n, &max_dist);
+    printBadTranslocationFromIdentity(n, distance_array);
+
+    // int max_cycle = computeMaxCycle(pi);
+    // printf("Max cycles: %d", max_cycle);
 
     clock_t end_time = clock();
     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;

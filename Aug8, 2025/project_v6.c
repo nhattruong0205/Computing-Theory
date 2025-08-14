@@ -643,6 +643,7 @@ int main()
     int max_dist = get_max_distance(FACT);
     printf("Maximum reachable distance = %d\n", max_dist);
 
+
     printBadTranslocationFromIdentity(n, distance_array);
 
     clock_t end_time = clock();

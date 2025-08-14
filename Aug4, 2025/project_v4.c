@@ -503,8 +503,6 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
                                     max_len_2 = neighbor_2_len;
                                 }
                             }
-                            {
-                            }
                         }
 
                         // printf("Neighbor distance: %d", neighbor_distance);
