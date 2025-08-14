@@ -668,6 +668,8 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
 
     printf("PiD: %d\n", pid);
     int count = 0;
+    long long last_progress = -1;
+
     for (int index = 0; index < size; ++index)
     // for (int index = 3; index < size - 1; ++index)
     {
@@ -679,6 +681,14 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
         int pi_shifted[MAX_N];
         int longestOddCycle_len = 0;
         int longestOddCycle_ind;
+
+        long long progress = (index * 100) / size;
+        if (progress != last_progress)
+        {
+            printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
+            fflush(stdout);
+            last_progress = progress;
+        }
 
         initialize_identity_permutation(result, n);
 

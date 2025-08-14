@@ -490,6 +490,8 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
 
     printf("PiD: %d\n", pid);
     int count = 0;
+    long long last_progress = -1;
+
     for (int index = 0; index < size; ++index)
     // for (int index = 3; index < size - 1; ++index)
     {
@@ -507,6 +509,15 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
             continue;
         // if (index != pid)
         {
+
+            long long progress = (index * 100) / size;
+            if (progress != last_progress)
+            {
+                printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
+                fflush(stdout);
+                last_progress = progress;
+            }
+
             initialize_identity_permutation(pi, n);
 
             unrank1(n, index, pi);
@@ -642,7 +653,6 @@ int main()
     // Get results
     int max_dist = get_max_distance(FACT);
     printf("Maximum reachable distance = %d\n", max_dist);
-
 
     printBadTranslocationFromIdentity(n, distance_array);
 

@@ -423,6 +423,7 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
 
     printf("PiD: %d\n", pid);
     int count = 0;
+
     for (int index = 0; index < size; ++index)
     // for (int index = 3; index < size - 1; ++index)
     {
