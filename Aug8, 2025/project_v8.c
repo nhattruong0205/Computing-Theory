@@ -290,7 +290,7 @@ int main()
     for (int i = 0; i < size; i++)
         scanf("%d", &input[i]);
 
-    // translocate(input, dst, size, 1, 2, 4);
+    translocate(input, dst, size, 1, 2, 4);
     print_array(dst, size);
 
     computeMostOddCycle(input, size);
@@ -356,4 +356,4 @@ int main()
 //     printf("\nExecution time: %.3f seconds\n", total_time);
 
 //     return 0;
-// }
+// } just add a function use translocationa dn compute each odd cycle of permutation, update if its highest odd, use bfs
