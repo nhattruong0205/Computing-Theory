@@ -81,7 +81,7 @@ static void add_edge(int (*adj)[2], int *deg, int u, int v, const char *label)
     }
     adj[u][deg[u]++] = v;
     adj[v][deg[v]++] = u;
-    // printf("%s: %d -- %d\n", label, u, v);
+    printf("%s: %d -- %d\n", label, u, v);
 }
 
 static void build_black_edges_from_perm(int (*adj)[2], int *deg, int *pi, int n)
@@ -349,52 +349,12 @@ void computeMostOddCycle_BFS(int *start_perm, int n)
 }
 
 //-------------- Main --------------------
-int main()
-{
-    int size;
-
-    int *dst = (int *)malloc(size * sizeof(int));
-    // Input the size of the OG permutation
-    printf("Enter the size of the permutation: ");
-    scanf("%d", &size);
-
-    if (size <= 0 || size > MAX_N)
-    {
-        printf("Error: Size must be between 1 and %d\n", MAX_N);
-        return 1;
-    }
-
-    int *input = (int *)malloc(size * sizeof(int));
-    if (!input)
-    {
-        printf("Failed to allocate memory for input array\n");
-        return 1;
-    }
-    clock_t start_time = clock();
-
-    // Input the permutation
-    printf("Enter the permutation (space-separated): ");
-    for (int i = 0; i < size; i++)
-        scanf("%d", &input[i]);
-
-    // translocate(input, dst, size, 1, 2, 4);
-    print_array(input, size);
-
-    computeMostOddCycle_BFS(input, size);
-
-    clock_t end_time = clock();
-    double total_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-    printf("\nExecution time: %.3f seconds\n", total_time);
-
-    return 0;
-}
-
 // int main()
 // {
 //     int size;
 
-//     clock_t start_time = clock();
-
+//     int *dst = (int *)malloc(size * sizeof(int));
+//     // Input the size of the OG permutation
 //     printf("Enter the size of the permutation: ");
 //     scanf("%d", &size);
 
@@ -410,33 +370,17 @@ int main()
 //         printf("Failed to allocate memory for input array\n");
 //         return 1;
 //     }
+//     clock_t start_time = clock();
 
-//     int *dst = (int *)malloc(size * sizeof(int));
-
+//     // Input the permutation
 //     printf("Enter the permutation (space-separated): ");
 //     for (int i = 0; i < size; i++)
 //         scanf("%d", &input[i]);
 
-//     // adjacency: index 1..2n, each vertex has degree 2
-//     int (*adj)[2] = calloc(2 * size + 1, sizeof *adj);
-//     int *deg = calloc(2 * size + 1, sizeof *deg);
-//     if (!adj || !deg)
-//     {
-//         fprintf(stderr, "OOM\n");
-//         return 1;
-//     }
+//     // translocate(input, dst, size, 1, 2, 4);
+//     print_array(input, size);
 
-//     // printf("Building edges...\n");
-//     build_black_edges_from_perm(adj, deg, input, size); // e.g., 2--11, 12--9, ...
-//     build_gray_edges_identity(adj, deg, size);          // e.g., 2--3, 4--5, ..., 14--1
-
-//     printf("\nCounting cycles...\n");
-//     count_cycles_colored(adj, size);
-
-//     translocate(input, dst, size, 1, 2, 4);
-
-//     free(adj);
-//     free(deg);
+//     computeMostOddCycle_BFS(input, size);
 
 //     clock_t end_time = clock();
 //     double total_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
@@ -444,3 +388,59 @@ int main()
 
 //     return 0;
 // }
+
+int main()
+{
+    int size;
+
+    clock_t start_time = clock();
+
+    printf("Enter the size of the permutation: ");
+    scanf("%d", &size);
+
+    if (size <= 0 || size > MAX_N)
+    {
+        printf("Error: Size must be between 1 and %d\n", MAX_N);
+        return 1;
+    }
+
+    int *input = (int *)malloc(size * sizeof(int));
+    if (!input)
+    {
+        printf("Failed to allocate memory for input array\n");
+        return 1;
+    }
+
+    int *dst = (int *)malloc(size * sizeof(int));
+
+    printf("Enter the permutation (space-separated): ");
+    for (int i = 0; i < size; i++)
+        scanf("%d", &input[i]);
+
+    // adjacency: index 1..2n, each vertex has degree 2
+    int (*adj)[2] = calloc(2 * size + 1, sizeof *adj);
+    int *deg = calloc(2 * size + 1, sizeof *deg);
+    if (!adj || !deg)
+    {
+        fprintf(stderr, "OOM\n");
+        return 1;
+    }
+
+    // printf("Building edges...\n");
+    build_black_edges_from_perm(adj, deg, input, size); // e.g., 2--11, 12--9, ...
+    build_gray_edges_identity(adj, deg, size);          // e.g., 2--3, 4--5, ..., 14--1
+
+    printf("\nCounting cycles...\n");
+    count_cycles_colored(adj, size);
+
+    translocate(input, dst, size, 1, 2, 4);
+
+    free(adj);
+    free(deg);
+
+    clock_t end_time = clock();
+    double total_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    printf("\nExecution time: %.3f seconds\n", total_time);
+
+    return 0;
+}

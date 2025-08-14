@@ -630,7 +630,7 @@ int main()
     initialize_identity_permutation(pi, n);
 
     // Run the main algorithm
-    int *distance_array = ComputeTDistnceFromIdentity(n);
+    int *distance_array = ComputeTDistanceFromIdentity(n);
     if (!distance_array)
     {
         printf("Failed to compute distance array\n");
@@ -642,6 +642,8 @@ int main()
     // Get results
     int max_dist = get_max_distance(FACT);
     printf("Maximum reachable distance = %d\n", max_dist);
+
+    printBadTranslocationFromIdentity(n, distance_array);
 
     clock_t end_time = clock();
     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
