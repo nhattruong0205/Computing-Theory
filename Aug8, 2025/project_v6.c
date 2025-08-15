@@ -474,6 +474,118 @@ int *ComputeTDistanceFromIdentity(int n)
     return D;
 }
 
+void printBadTranslocationFromIdentity_Level1(int n, int *distance_array)
+{
+    int *pi = (int *)malloc(n * sizeof(int));
+    int *pi_inv = (int *)malloc(n * sizeof(int));
+
+    long long size = factorial(n);
+
+    initialize_identity_permutation(pi, n);
+    print_array(pi, n);
+    compute_inverse(pi, pi_inv, n);
+    // print_array(pi_inv, n);
+
+    int pid = rank_safe(n, pi, pi_inv);
+
+    printf("PiD: %d\n", pid);
+    int count = 0;
+    long long last_progress = -1;
+
+    for (int index = 0; index < size; ++index)
+    // for (int index = 3; index < size - 1; ++index)
+    {
+        int current_distance;
+        int current_sub_len;
+        int neighbor_distance;
+        int neighbor_sub_len;
+        int result[MAX_N];
+        int longestSubSequence_len = 0;
+        int longestSubSequence_ind;
+
+        initialize_identity_permutation(result, n);
+
+        if (distance_array[index] == 0)
+            continue;
+        // if (index != pid)
+        {
+
+            long long progress = (index * 100) / size;
+            if (progress != last_progress)
+            {
+                printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
+                fflush(stdout);
+                last_progress = progress;
+            }
+
+            initialize_identity_permutation(pi, n);
+
+            unrank1(n, index, pi);
+            // printf("Current permutation");
+            // print_array(pi, n);
+            // printf("\n");
+
+            current_distance = distance_array[index];
+            current_sub_len = longest_increasing_contiguous_subsequence(pi, n);
+            int tmp[MAX_N];
+            int tmp_inv[MAX_N];
+            int max_len = 0, max_rank, max_len_2 = 0;
+
+            for (int i = 0; i < n; ++i)
+                for (int j = i + 1; j < n; ++j)
+                    for (int k = j; k < n; ++k)
+                    {
+                        /* Build translocated permutation */
+                        int idx = 0;
+
+                        /* 1. Prefix: [0..i-1] */
+                        for (int x = 0; x < i; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 2. Block: [j..k] */
+                        for (int x = j; x <= k; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 3. Middle: [i..j-1] */
+                        for (int x = i; x < j; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 4. Suffix: [k+1..n-1] */
+                        for (int x = k + 1; x < n; ++x)
+                            tmp[idx++] = pi[x];
+
+                        // printf("Its neighbors");
+                        // print_array(tmp, n);
+                        // printf("\n");
+
+                        neighbor_sub_len = longest_increasing_contiguous_subsequence(tmp, n);
+                        if (neighbor_sub_len > max_len)
+                        {
+                            max_len = neighbor_sub_len;
+                            // printf("Max len : %d\n", max_len);
+                            // print_array(tmp, n);
+                            compute_inverse(tmp, tmp_inv, n);
+                            max_rank = rank_safe(n, tmp, tmp_inv);
+                        }
+                        // printf("Current sublen: %d\n", current_sub_len);
+                    }
+            if (distance_array[max_rank] != (distance_array[index] - 1))
+            {
+                count++;
+
+                initialize_identity_permutation(pi, n);
+
+                unrank1(n, index, pi);
+
+                // printf("Bad index: %d, %d, %d, %d, %d\n", index, max_len, max_len_2, distance_array[index], distance_array[max_rank]);
+                // print_array(pi, n);
+                neighbor_distance = distance_array[max_rank];
+            }
+        }
+    }
+    printf("Number of bad permutation: %d\n", count);
+}
+
 void printBadTranslocationFromIdentity(int n, int *distance_array)
 {
     int *pi = (int *)malloc(n * sizeof(int));
@@ -654,7 +766,8 @@ int main()
     int max_dist = get_max_distance(FACT);
     printf("Maximum reachable distance = %d\n", max_dist);
 
-    printBadTranslocationFromIdentity(n, distance_array);
+    // printBadTranslocationFromIdentity(n, distance_array);
+    printBadTranslocationFromIdentity_Level1(n, distance_array);
 
     clock_t end_time = clock();
     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;

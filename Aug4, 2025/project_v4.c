@@ -407,6 +407,78 @@ int computeMaxLen(int pi[])
     return max_len;
 }
 
+void printBadTranslocationFromIdentity_1level(int n, int *distance_array)
+{
+    int *pi = (int *)malloc(n * sizeof(int));
+    int *pi_inv = (int *)malloc(n * sizeof(int));
+    long long size = factorial(n);
+
+    initialize_identity_permutation(pi, n);
+    compute_inverse(pi, pi_inv, n);
+
+    int pid = rank_safe(n, pi, pi_inv);
+    printf("Identity permutation rank: %d\n", pid);
+
+    int count = 0;
+
+    for (long long index = 0; index < size; ++index)
+    {
+        if (distance_array[index] == 0)
+            continue; // skip identity permutation
+
+        initialize_identity_permutation(pi, n);
+        unrank1(n, index, pi);
+
+        int current_distance = distance_array[index];
+        int current_sub_len = longest_increasing_contiguous_subsequence(pi, n);
+
+        int tmp[MAX_N];
+        int tmp_inv[MAX_N];
+        int max_len = 0;
+        int max_rank = -1;
+
+        // Loop through all direct neighbors (translocations)
+        for (int i = 0; i < n; ++i)
+            for (int j = i + 1; j < n; ++j)
+                for (int k = j; k < n; ++k)
+                {
+                    int idx = 0;
+                    for (int x = 0; x < i; ++x)
+                        tmp[idx++] = pi[x];
+                    for (int x = j; x <= k; ++x)
+                        tmp[idx++] = pi[x];
+                    for (int x = i; x < j; ++x)
+                        tmp[idx++] = pi[x];
+                    for (int x = k + 1; x < n; ++x)
+                        tmp[idx++] = pi[x];
+
+                    int neighbor_sub_len = longest_increasing_contiguous_subsequence(tmp, n);
+
+                    if (neighbor_sub_len > max_len)
+                    {
+                        max_len = neighbor_sub_len;
+                        compute_inverse(tmp, tmp_inv, n);
+                        max_rank = rank_safe(n, tmp, tmp_inv);
+                    }
+                }
+
+        // Check if the distance does not follow 1-level pattern
+        if (max_rank != -1 && distance_array[max_rank] != (current_distance - 1))
+        {
+            count++;
+            printf("Bad permutation at rank %lld: ", index);
+            print_array(pi, n);
+            printf("distance = %d, neighbor max distance = %d\n",
+                   current_distance, distance_array[max_rank]);
+        }
+    }
+
+    printf("Number of bad permutations (1-level neighbors): %d\n", count);
+
+    free(pi);
+    free(pi_inv);
+}
+
 void printBadTranslocationFromIdentity(int n, int *distance_array)
 {
     int *pi = (int *)malloc(n * sizeof(int));
@@ -548,6 +620,7 @@ int main()
     int *distance_array = ComputeTDistanceFromIdentity(n);
 
     long long size = factorial(n);
+
     printBadTranslocationFromIdentity(n, distance_array);
 
     // unrank1(n,3, pi);
