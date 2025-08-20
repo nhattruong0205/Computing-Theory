@@ -1,5 +1,5 @@
 // Find the lower bound of T(n,d) using the greedy algorithm.
-// Using modified lexicographical ranking
+// Using modified standard ranking
 // Updated from project_v5.c where I'll not recompute visiting permutation where I checked if it's exist, not adding it to the queue meaning that its translocation permutation will not be there as well.
 
 #include <stdbool.h>
@@ -253,35 +253,51 @@ void swap(int *a, int *b)
     *b = temp;
 }
 
-// Original recursive rank1 function: computes the lexicographic rank of a permutation
-int rank1(int n, int pi[], int pi_inv[])
+// Original recursive rank lex function: computes the lexicographic rank of a permutation
+int rank_lex(int pi[], int n)
 {
-    if (n == 1)
-        return 0;
+    int rank = 0;
+    int fact = 1;
+    for (int i = 2; i <= n; i++)
+        fact *= i; // fact = n!
 
-    int s = pi[n - 1];
+    bool used[MAX_N] = {false};
 
-    swap(&pi[n - 1], &pi[pi_inv[n - 1]]);
-    swap(&pi_inv[s], &pi_inv[n - 1]);
-
-    return s + n * rank1(n - 1, pi, pi_inv);
-}
-
-int rank_safe(int n, const int src[], int *inv_buf)
-{
-    int tmp[MAX_N], tmp_inv[MAX_N];
-    memcpy(tmp, src, n * sizeof(int));         // work on a copy
-    memcpy(tmp_inv, inv_buf, n * sizeof(int)); // inv must start correct
-    return rank1(n, tmp, tmp_inv);             // rank1 can now swap freely
-}
-
-// Original recursive unrank1: Builds a permutation from a given rank
-void unrank1(int n, int r, int pi[])
-{
-    if (n > 0)
+    for (int i = 0; i < n; i++)
     {
-        swap(&pi[n - 1], &pi[r % n]);
-        unrank1(n - 1, r / n, pi);
+        fact /= (n - i); // fact = (n-i-1)!
+        int smaller = 0;
+        for (int j = 0; j < pi[i]; j++)
+        {
+            if (!used[j])
+                smaller++;
+        }
+        rank += smaller * fact;
+        used[pi[i]] = true;
+    }
+    return rank;
+}
+
+// Build the permutation corresponding to rank r in lexicographic order
+void unrank_lex(int n, int r, int pi[])
+{
+    int fact = 1;
+    for (int i = 2; i <= n; i++)
+        fact *= i;
+
+    int elems[MAX_N];
+    for (int i = 0; i < n; i++)
+        elems[i] = i;
+
+    for (int i = 0; i < n; i++)
+    {
+        fact /= (n - i);
+        int idx = r / fact;
+        r = r % fact;
+        pi[i] = elems[idx];
+        // remove elems[idx]
+        for (int j = idx; j < n - i - 1; j++)
+            elems[j] = elems[j + 1];
     }
 }
 
@@ -305,18 +321,14 @@ void print_D(int n, long long size)
     long long print_limit = size < 50 ? size : 50; // Limit output for large n
     for (long long i = 0; i < print_limit; i++)
     {
-        initialize_identity_permutation(pi, n); // reset
-        unrank1(n, (int)i, pi);
+        unrank_lex(n, (int)i, pi); // directly get permutation of rank i
         printf("Rank %lld: ", i);
         print_array(pi, n);
+
         if (D[i] == INF)
-        {
             printf("distance = INF (unreachable)\n");
-        }
         else
-        {
             printf("distance = %d\n", D[i]);
-        }
     }
     if (size > 50)
     {
@@ -341,22 +353,16 @@ int get_max_distance(long long size)
 int *ComputeTDistanceFromIdentity(int n)
 {
     int *pi = (int *)malloc(n * sizeof(int));
-    int *pi_inv = (int *)malloc(n * sizeof(int));
-
-    if (!pi || !pi_inv)
+    if (!pi)
     {
-        printf("Failed to allocate memory for pi or pi_inv\n");
-        if (pi)
-            free(pi);
-        if (pi_inv)
-            free(pi_inv);
+        printf("Failed to allocate memory for pi\n");
         return NULL;
     }
 
+    // Identity permutation
     initialize_identity_permutation(pi, n);
-    compute_inverse(pi, pi_inv, n);
 
-    int pid = rank_safe(n, pi, pi_inv);
+    int pid = rank_lex(pi, n); // rank of identity
     D[pid] = 0;
     visited[pid] = true;
 
@@ -374,12 +380,11 @@ int *ComputeTDistanceFromIdentity(int n)
         }
 
         int current_rank = dequeue();
+
         // Convert rank back to permutation
-        initialize_identity_permutation(result, n);
-        unrank1(n, current_rank, result);
+        unrank_lex(n, current_rank, result);
 
         int tmp[MAX_N];
-        int tmp_inv[MAX_N];
         for (int i = 0; i < n; ++i)
             for (int j = i + 1; j < n; ++j)
                 for (int k = j; k < n; ++k)
@@ -387,25 +392,24 @@ int *ComputeTDistanceFromIdentity(int n)
                     /* Build translocated permutation */
                     int idx = 0;
 
-                    /* 1. Prefix: [0..i-1] */
+                    // 1. Prefix: [0..i-1]
                     for (int x = 0; x < i; ++x)
                         tmp[idx++] = result[x];
 
-                    /* 2. Block: [j..k] */
+                    // 2. Block: [j..k]
                     for (int x = j; x <= k; ++x)
                         tmp[idx++] = result[x];
 
-                    /* 3. Middle: [i..j-1] */
+                    // 3. Middle: [i..j-1]
                     for (int x = i; x < j; ++x)
                         tmp[idx++] = result[x];
 
-                    /* 4. Suffix: [k+1..n-1] */
+                    // 4. Suffix: [k+1..n-1]
                     for (int x = k + 1; x < n; ++x)
                         tmp[idx++] = result[x];
 
                     // Get rank of translocated permutation
-                    compute_inverse(tmp, tmp_inv, n);
-                    int rank_tmp = rank_safe(n, tmp, tmp_inv);
+                    int rank_tmp = rank_lex(tmp, n);
 
                     if (rank_tmp < 0 || rank_tmp >= FACT)
                     {
@@ -413,42 +417,39 @@ int *ComputeTDistanceFromIdentity(int n)
                         continue;
                     }
 
-                    // Check if the permutation has already been visited
+                    // If not visited yet, update distance and enqueue
                     if (!visited[rank_tmp])
                     {
                         visited[rank_tmp] = true;
-                        if (D[rank_tmp] > D[current_rank] + 1)
-                        {
-                            D[rank_tmp] = D[current_rank] + 1;
-                            enqueue(rank_tmp);
-                        }
+                        D[rank_tmp] = D[current_rank] + 1;
+                        enqueue(rank_tmp);
                     }
                 }
     }
 
     printf("Total processed: %lld permutations\n", processed);
     free(pi);
-    free(pi_inv);
     return D;
 }
 
 // Compute distance between two permutations pi and sigma
 int distance_between_2_permutations(int n, int *pi, int *sigma, int *D)
 {
+    // Compute composition: pi⁻¹ ∘ sigma
     int pi_inv[MAX_N];
-    compute_inverse(pi, pi_inv, n);
+    for (int i = 0; i < n; i++)
+    {
+        pi_inv[pi[i]] = i; // inverse of pi
+    }
 
-    // Compute composition: pi_inv ∘ sigma
     int composed[MAX_N];
     for (int i = 0; i < n; i++)
     {
         composed[i] = pi_inv[sigma[i]];
     }
 
-    // Rank the composed permutation
-    int composed_inv[MAX_N];
-    compute_inverse(composed, composed_inv, n);
-    int r = rank_safe(n, composed, composed_inv);
+    // Rank the composed permutation in lex order
+    int r = rank_lex(composed, n);
 
     return D[r]; // lookup precomputed distance
 }
@@ -467,7 +468,6 @@ long long T(int n, int d)
 
     long long code_size = 0;
     int pi[MAX_N], sigma[MAX_N];
-    int pi_inv[MAX_N], sigma_inv[MAX_N];
 
     // Greedy algorithm: keep selecting permutations until none remain
     for (long long i = 0; i < FACT; i++)
@@ -478,24 +478,21 @@ long long T(int n, int d)
             code_size++;
 
             // Convert rank i to permutation pi
-            initialize_identity_permutation(pi, n);
-            unrank1(n, (int)i, pi);
+            unrank_lex(n, (int)i, pi);
 
-            print_array(pi, n);
+            // print_array(pi, n);
 
-            // Forbid all permutations within distance d-1 of pi
+            // Forbid all permutations within distance < d of pi
             for (long long j = 0; j < FACT; j++)
             {
                 if (!forbidden[j])
                 {
                     // Convert rank j to permutation sigma
-                    initialize_identity_permutation(sigma, n);
-                    unrank1(n, (int)j, sigma);
+                    unrank_lex(n, (int)j, sigma);
 
                     // Compute distance between pi and sigma
                     int dist = distance_between_2_permutations(n, pi, sigma, D);
 
-                    // If distance < d, forbid this permutation
                     if (dist < d)
                     {
                         forbidden[j] = true;
@@ -522,8 +519,8 @@ int main()
         return 1;
     }
 
-    printf("Enter the value of distance d: ");
-    scanf("%d", &d);
+    // printf("Enter the value of distance d: ");
+    // scanf("%d", &d);
 
     printf("Starting computation for n=%d\n", n);
     printf("This will process %lld permutations\n", factorial(n));
@@ -564,14 +561,14 @@ int main()
     // int max_dist = get_max_distance(FACT);
     // printf("Maximum reachable distance = %d\n", max_dist);
 
-    // for (int d = 2; d < n; d++)
-    // {
-    //     long long result = T(n, d);
-    //     printf("T(%d,%d) = %lld\n", n, d, result);
-    // }
+    for (int d = 2; d < 8; d++)
+    {
+        long long result = T(n, d);
+        printf("T(%d,%d) = %lld\n", n, d, result);
+    }
 
-    long long result = T(n, d);
-    printf("T(%d,%d) = %lld\n", n, d, result);
+    // long long result = T(n, d);
+    // printf("T(%d,%d) = %lld\n", n, d, result);
 
     clock_t end_time = clock();
     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
