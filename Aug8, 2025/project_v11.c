@@ -561,7 +561,7 @@ int main()
     // int max_dist = get_max_distance(FACT);
     // printf("Maximum reachable distance = %d\n", max_dist);
 
-    for (int d = 2; d < 8; d++)
+    for (int d = 4; d < 8; d++)
     {
         long long result = T(n, d);
         printf("T(%d,%d) = %lld\n", n, d, result);
