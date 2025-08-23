@@ -350,6 +350,82 @@ int get_max_distance(long long size)
     return max_val;
 }
 
+// Function to compute counts
+int *get_distance_counts(long long size, int *max_val_out)
+{
+    int max_val = -1;
+
+    // Find maximum valid distance
+    for (long long i = 0; i < size; i++)
+    {
+        if (D[i] != INF && D[i] > max_val)
+        {
+            max_val = D[i];
+        }
+    }
+
+    if (max_val < 0)
+    {
+        *max_val_out = -1;
+        return NULL; // No valid distances
+    }
+
+    // Allocate array for counts
+    int *count = (int *)calloc(max_val + 1, sizeof(int));
+    if (!count)
+    {
+        *max_val_out = -1;
+        return NULL; // Allocation failed
+    }
+
+    // Count frequencies
+    for (long long i = 0; i < size; i++)
+    {
+        if (D[i] != INF)
+        {
+            count[D[i]]++;
+        }
+    }
+
+    *max_val_out = max_val;
+    return count;
+}
+
+// Function to print counts
+void print_distance_counts(int *count, int max_val)
+{
+    if (!count || max_val < 0)
+    {
+        printf("No distance counts available.\n");
+        return;
+    }
+
+    printf("Distance counts:\n");
+    for (int d = 0; d <= max_val; d++)
+    {
+        if (count[d] > 0)
+        {
+            printf("Distance %d → %d times\n", d, count[d]);
+        }
+    }
+}
+
+void save_D_to_file(const char *filename, int *D, long long size)
+{
+    FILE *fp = fopen(filename, "w");
+    if (!fp)
+    {
+        printf("Error: cannot open %s for writing.\n", filename);
+        return;
+    }
+    for (long long i = 0; i < size; i++)
+    {
+        fprintf(fp, "%d\n", D[i]);
+    }
+    fclose(fp);
+    printf("Saved D array to %s (%lld elements)\n", filename, size);
+}
+
 int *ComputeTDistanceFromIdentity(int n)
 {
     int *pi = (int *)malloc(n * sizeof(int));
@@ -428,6 +504,11 @@ int *ComputeTDistanceFromIdentity(int n)
     }
 
     printf("Total processed: %lld permutations\n", processed);
+
+    char filename[64];
+    sprintf(filename, "distances_n%d.txt", n);
+    save_D_to_file(filename, D, FACT);
+
     free(pi);
     return D;
 }
@@ -506,6 +587,43 @@ long long T(int n, int d)
     return code_size;
 }
 
+long long V(int n, int r, int *D)
+{
+    if (r < 0)
+        return 0;
+
+    long long count = 0;
+    int tmp[MAX_N];
+
+    for (long long rank = 0; rank < FACT; ++rank)
+    {
+        if (D[rank] <= r)
+        {
+            ++count;
+            //  initialize_identity_permutation(tmp, n);
+            //     unrank1(n, (int)rank, tmp);
+            //     printf("Rank %lld: ", rank);
+            //     print_array(tmp, n);
+            //     printf("distance = %d\n", D[rank]);
+        }
+    }
+
+    printf("\nV(n=%d, r=%d) = %lld\n", n, r, count);
+    return count;
+}
+
+// Gilbert–Varshamov lower bound using precomputed ball size
+long long GV_lower_bound(int n, int d, int *D)
+{
+    int r = d - 1;
+    long long ball = V(n, r, D);
+    if (ball == 0)
+        return 0; // safety
+    long long bound = FACT / ball;
+    printf("GV lower bound: T(%d,%d) >= %lld (since %lld!/%lld)\n", n, d, bound, (long long)n, ball);
+    return bound;
+}
+
 int main()
 {
     clock_t start_time = clock();
@@ -551,24 +669,13 @@ int main()
         return 1;
     }
 
-    // int perm1[MAX_N] = {2, 4, 1, 3};
-    // int perm2[MAX_N] = {2, 3, 1, 4};
-    // int dis = distance_between_2_permutations(n, perm1, perm2, distance_array);
-    // printf("Distance between pi and sigma: %d", dis);
-    // print_D(n, FACT);
-
     // Get results
-    // int max_dist = get_max_distance(FACT);
-    // printf("Maximum reachable distance = %d\n", max_dist);
+    int max_dist = get_max_distance(FACT);
 
-    for (int d = 4; d < 8; d++)
+    for (int d_try = 1; d_try <= 7; ++d_try)
     {
-        long long result = T(n, d);
-        printf("T(%d,%d) = %lld\n", n, d, result);
+        V(n, d_try, distance_array);
     }
-
-    // long long result = T(n, d);
-    // printf("T(%d,%d) = %lld\n", n, d, result);
 
     clock_t end_time = clock();
     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
@@ -580,3 +687,82 @@ int main()
     free_memory();
     return 0;
 }
+
+// int main()
+// {
+//     clock_t start_time = clock();
+
+//     printf("Enter the value of n (permutation length): ");
+//     scanf("%d", &n);
+
+//     if (n <= 0 || n > MAX_N)
+//     {
+//         printf("Error: n must be between 1 and %d\n", MAX_N);
+//         return 1;
+//     }
+
+//     // printf("Enter the value of distance d: ");
+//     // scanf("%d", &d);
+
+//     printf("Starting computation for n=%d\n", n);
+//     printf("This will process %lld permutations\n", factorial(n));
+
+//     // Allocate memory
+//     if (!allocate_memory(n))
+//     {
+//         printf("Memory allocation failed. Exiting.\n");
+//         return 1;
+//     }
+
+//     int *pi = (int *)malloc(n * sizeof(int));
+//     if (!pi)
+//     {
+//         printf("Failed to allocate pi array\n");
+//         free_memory();
+//         return 1;
+//     }
+//     initialize_identity_permutation(pi, n);
+
+//     // Run the main algorithm
+//     int *distance_array = ComputeTDistanceFromIdentity(n);
+//     if (!distance_array)
+//     {
+//         printf("Failed to compute distance array\n");
+//         free(pi);
+//         free_memory();
+//         return 1;
+//     }
+
+//     // int perm1[MAX_N] = {2, 4, 1, 3};
+//     // int perm2[MAX_N] = {2, 3, 1, 4};
+//     // int dis = distance_between_2_permutations(n, perm1, perm2, distance_array);
+//     // printf("Distance between pi and sigma: %d", dis);
+//     // print_D(n, FACT);
+
+//     // Get results
+//     int max_dist = get_max_distance(FACT);
+//     // printf("Maximum reachable distance = %d\n", max_dist);
+
+//     // for (int d = 4; d < 8; d++)
+//     // {
+//     //     long long result = T(n, d);
+//     //     printf("T(%d,%d) = %lld\n", n, d, result);
+//     // }
+
+//     int *counts = get_distance_counts(FACT, &max_dist);
+
+//     print_distance_counts(counts, max_dist);
+
+//     // long long result = T(n, d);
+//     // printf("T(%d,%d) = %lld\n", n, d, result);
+
+//     clock_t end_time = clock();
+//     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+
+//     printf("\nTotal program execution time: %.3f seconds\n", total_program_time);
+
+//     // Cleanup
+//     free(pi);
+//     free_memory();
+//     return 0;
+// }

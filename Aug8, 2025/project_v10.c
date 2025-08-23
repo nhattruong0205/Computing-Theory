@@ -481,7 +481,7 @@ long long T(int n, int d)
             initialize_identity_permutation(pi, n);
             unrank1(n, (int)i, pi);
 
-            print_array(pi, n);
+            //print_array(pi, n);
 
             // Forbid all permutations within distance d-1 of pi
             for (long long j = 0; j < FACT; j++)
@@ -522,8 +522,8 @@ int main()
         return 1;
     }
 
-    printf("Enter the value of distance d: ");
-    scanf("%d", &d);
+    // printf("Enter the value of distance d: ");
+    // scanf("%d", &d);
 
     printf("Starting computation for n=%d\n", n);
     printf("This will process %lld permutations\n", factorial(n));
@@ -564,11 +564,11 @@ int main()
     // int max_dist = get_max_distance(FACT);
     // printf("Maximum reachable distance = %d\n", max_dist);
 
-    // for (int d = 2; d < n; d++)
-    // {
-    //     long long result = T(n, d);
-    //     printf("T(%d,%d) = %lld\n", n, d, result);
-    // }
+    for (int d = 4; d < n; d++)
+    {
+        long long result = T(n, d);
+        printf("T(%d,%d) = %lld\n", n, d, result);
+    }
 
     long long result = T(n, d);
     printf("T(%d,%d) = %lld\n", n, d, result);
