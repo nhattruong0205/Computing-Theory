@@ -481,7 +481,7 @@ long long T(int n, int d)
             initialize_identity_permutation(pi, n);
             unrank1(n, (int)i, pi);
 
-            //print_array(pi, n);
+            // print_array(pi, n);
 
             // Forbid all permutations within distance d-1 of pi
             for (long long j = 0; j < FACT; j++)
@@ -507,6 +507,31 @@ long long T(int n, int d)
 
     free(forbidden);
     return code_size;
+}
+
+long long V(int n, int r, int *D)
+{
+    if (r < 0)
+        return 0;
+
+    long long count = 0;
+    int tmp[MAX_N];
+
+    for (long long rank = 0; rank < FACT; ++rank)
+    {
+        if (D[rank] <= r)
+        {
+            ++count;
+            //  initialize_identity_permutation(tmp, n);
+            //     unrank1(n, (int)rank, tmp);
+            //     printf("Rank %lld: ", rank);
+            //     print_array(tmp, n);
+            //     printf("distance = %d\n", D[rank]);
+        }
+    }
+
+    printf("\nV(n=%d, r=%d) = %lld\n", n, r, count);
+    return count;
 }
 
 int main()
