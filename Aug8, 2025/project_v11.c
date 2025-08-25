@@ -1,5 +1,5 @@
 // Find the lower bound of T(n,d) using the greedy algorithm.
-// Using modified standard ranking
+// Using standard ranking
 // Updated from project_v5.c where I'll not recompute visiting permutation where I checked if it's exist, not adding it to the queue meaning that its translocation permutation will not be there as well.
 
 #include <stdbool.h>
@@ -673,71 +673,6 @@ long long GV_lower_bound(int n, int d, int *D)
     return bound;
 }
 
-int main()
-{
-    clock_t start_time = clock();
-
-    printf("Enter the value of n (permutation length): ");
-    scanf("%d", &n);
-
-    if (n <= 0 || n > MAX_N)
-    {
-        printf("Error: n must be between 1 and %d\n", MAX_N);
-        return 1;
-    }
-
-    // printf("Enter the value of distance d: ");
-    // scanf("%d", &d);
-
-    printf("Starting computation for n=%d\n", n);
-    printf("This will process %lld permutations\n", factorial(n));
-
-    // Allocate memory
-    if (!allocate_memory(n))
-    {
-        printf("Memory allocation failed. Exiting.\n");
-        return 1;
-    }
-
-    int *pi = (int *)malloc(n * sizeof(int));
-    if (!pi)
-    {
-        printf("Failed to allocate pi array\n");
-        free_memory();
-        return 1;
-    }
-    initialize_identity_permutation(pi, n);
-
-    int *distance_array = ComputeTDistanceFromIdentity(n);
-    if (!distance_array)
-    {
-        printf("Failed to compute distance array\n");
-        free(pi);
-        free_memory();
-        return 1;
-    }
-
-    // long long size;
-    // int *distance_array = load_D_from_file(n, &size);
-    // Get results
-    int max_dist = get_max_distance(FACT);
-
-    for (int d_try = 1; d_try <= 7; ++d_try)
-    {
-        V(n, d_try, distance_array);
-    }
-
-    clock_t end_time = clock();
-    double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-
-    printf("\nTotal program execution time: %.3f seconds\n", total_program_time);
-
-    // Cleanup
-    free(pi);
-    free_memory();
-    return 0;
-}
-
 // int main()
 // {
 //     clock_t start_time = clock();
@@ -773,7 +708,6 @@ int main()
 //     }
 //     initialize_identity_permutation(pi, n);
 
-//     // Run the main algorithm
 //     int *distance_array = ComputeTDistanceFromIdentity(n);
 //     if (!distance_array)
 //     {
@@ -783,28 +717,15 @@ int main()
 //         return 1;
 //     }
 
-//     // int perm1[MAX_N] = {2, 4, 1, 3};
-//     // int perm2[MAX_N] = {2, 3, 1, 4};
-//     // int dis = distance_between_2_permutations(n, perm1, perm2, distance_array);
-//     // printf("Distance between pi and sigma: %d", dis);
-//     // print_D(n, FACT);
-
+//     // long long size;
+//     // int *distance_array = load_D_from_file(n, &size);
 //     // Get results
 //     int max_dist = get_max_distance(FACT);
-//     // printf("Maximum reachable distance = %d\n", max_dist);
 
-//     // for (int d = 4; d < 8; d++)
-//     // {
-//     //     long long result = T(n, d);
-//     //     printf("T(%d,%d) = %lld\n", n, d, result);
-//     // }
-
-//     int *counts = get_distance_counts(FACT, &max_dist);
-
-//     print_distance_counts(counts, max_dist);
-
-//     // long long result = T(n, d);
-//     // printf("T(%d,%d) = %lld\n", n, d, result);
+//     for (int d_try = 1; d_try <= 7; ++d_try)
+//     {
+//         V(n, d_try, distance_array);
+//     }
 
 //     clock_t end_time = clock();
 //     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
@@ -816,3 +737,81 @@ int main()
 //     free_memory();
 //     return 0;
 // }
+
+int main()
+{
+    clock_t start_time = clock();
+
+    printf("Enter the value of n (permutation length): ");
+    scanf("%d", &n);
+
+    if (n <= 0 || n > MAX_N)
+    {
+        printf("Error: n must be between 1 and %d\n", MAX_N);
+        return 1;
+    }
+
+    // printf("Enter the value of distance d: ");
+    // scanf("%d", &d);
+
+    printf("Starting computation for n=%d\n", n);
+    printf("This will process %lld permutations\n", factorial(n));
+
+    // Allocate memory
+    if (!allocate_memory(n))
+    {
+        printf("Memory allocation failed. Exiting.\n");
+        return 1;
+    }
+
+    int *pi = (int *)malloc(n * sizeof(int));
+    if (!pi)
+    {
+        printf("Failed to allocate pi array\n");
+        free_memory();
+        return 1;
+    }
+    initialize_identity_permutation(pi, n);
+
+    // Run the main algorithm
+    int *distance_array = ComputeTDistanceFromIdentity(n);
+    if (!distance_array)
+    {
+        printf("Failed to compute distance array\n");
+        free(pi);
+        free_memory();
+        return 1;
+    }
+
+    // int perm1[MAX_N] = {2, 4, 1, 3};
+    // int perm2[MAX_N] = {2, 3, 1, 4};
+    // int dis = distance_between_2_permutations(n, perm1, perm2, distance_array);
+    // printf("Distance between pi and sigma: %d", dis);
+    // print_D(n, FACT);
+
+    // Get results
+    // int max_dist = get_max_distance(FACT);
+    // printf("Maximum reachable distance = %d\n", max_dist);
+
+    for (int d = 4; d < 8; d++)
+    {
+        GV_lower_bound(n, d, distance_array);
+    }
+
+    // int *counts = get_distance_counts(FACT, &max_dist);
+
+    // print_distance_counts(counts, max_dist);
+
+    // long long result = T(n, d);
+    // printf("T(%d,%d) = %lld\n", n, d, result);
+
+    clock_t end_time = clock();
+    double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+
+    printf("\nTotal program execution time: %.3f seconds\n", total_program_time);
+
+    // Cleanup
+    free(pi);
+    free_memory();
+    return 0;
+}
