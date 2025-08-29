@@ -507,7 +507,7 @@ int *ComputeTDistanceFromIdentity(int n)
 
     char filename[512];
     snprintf(filename, sizeof(filename),
-             "/Users/nhattruong/Documents/ComputingTheoryDArraydistances_n%d.txt", n);
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceStdRank/distances_n%d.txt", n);
     save_D_to_file(filename, D, FACT);
 
     free(pi);
@@ -519,7 +519,7 @@ int *load_D_from_file(int n, long long *size_out)
 {
     char filepath[512];
     snprintf(filepath, sizeof(filepath),
-             "/Users/nhattruong/Documents/ComputingTheoryDArraydistances_n%d.txt", n);
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceStdRank/distances_n%d.txt", n);
 
     FILE *f = fopen(filepath, "r");
     if (!f)
@@ -773,15 +773,19 @@ int main()
     }
     initialize_identity_permutation(pi, n);
 
-    // Run the main algorithm
-    int *distance_array = ComputeTDistanceFromIdentity(n);
-    if (!distance_array)
-    {
-        printf("Failed to compute distance array\n");
-        free(pi);
-        free_memory();
-        return 1;
-    }
+    // // Run the main algorithm
+    // int *distance_array = ComputeTDistanceFromIdentity(n);
+    // if (!distance_array)
+    // {
+    //     printf("Failed to compute distance array\n");
+    //     free(pi);
+    //     free_memory();
+    //     return 1;
+    // }
+
+    // Load save distance array
+    long long size;
+    int *distance_array = load_D_from_file(n, &size);
 
     // int perm1[MAX_N] = {2, 4, 1, 3};
     // int perm2[MAX_N] = {2, 3, 1, 4};
@@ -793,10 +797,7 @@ int main()
     // int max_dist = get_max_distance(FACT);
     // printf("Maximum reachable distance = %d\n", max_dist);
 
-    for (int d = 4; d < 8; d++)
-    {
-        GV_lower_bound(n, d, distance_array);
-    }
+    // GV_lower_bound(n, d, distance_array);
 
     // int *counts = get_distance_counts(FACT, &max_dist);
 
@@ -804,6 +805,12 @@ int main()
 
     // long long result = T(n, d);
     // printf("T(%d,%d) = %lld\n", n, d, result);
+
+    for (int d = 4; d < 8; d++)
+    {
+        long long result = T(n, d);
+        printf("T(%d,%d) = %lld\n", n, d, result);
+    }
 
     clock_t end_time = clock();
     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;

@@ -338,6 +338,22 @@ int get_max_distance(long long size)
     return max_val;
 }
 
+void save_D_to_file(const char *filename, int *D, long long size)
+{
+    FILE *fp = fopen(filename, "w");
+    if (!fp)
+    {
+        printf("Error: cannot open %s for writing.\n", filename);
+        return;
+    }
+    for (long long i = 0; i < size; i++)
+    {
+        fprintf(fp, "%d\n", D[i]);
+    }
+    fclose(fp);
+    printf("Saved D array to %s (%lld elements)\n", filename, size);
+}
+
 int *ComputeTDistanceFromIdentity(int n)
 {
     int *pi = (int *)malloc(n * sizeof(int));
@@ -429,7 +445,60 @@ int *ComputeTDistanceFromIdentity(int n)
     printf("Total processed: %lld permutations\n", processed);
     free(pi);
     free(pi_inv);
+
+    char filename[512];
+    snprintf(filename, sizeof(filename),
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
+    save_D_to_file(filename, D, FACT);
     return D;
+}
+
+// Load D array from the fixed directory path
+int *load_D_from_file(int n, long long *size_out)
+{
+    char filepath[512];
+    snprintf(filepath, sizeof(filepath),
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
+
+    FILE *f = fopen(filepath, "r");
+    if (!f)
+    {
+        perror("Failed to open file for reading");
+        return NULL;
+    }
+
+    // Count number of lines to determine size
+    long long count = 0;
+    int temp;
+    while (fscanf(f, "%d", &temp) == 1)
+    {
+        count++;
+    }
+    rewind(f); // go back to beginning
+
+    int *D_loaded = (int *)malloc(count * sizeof(int));
+    if (!D_loaded)
+    {
+        fclose(f);
+        perror("Memory allocation failed");
+        return NULL;
+    }
+
+    for (long long i = 0; i < count; i++)
+    {
+        if (fscanf(f, "%d", &D_loaded[i]) != 1)
+        {
+            printf("Error reading element %lld\n", i);
+            free(D_loaded);
+            fclose(f);
+            return NULL;
+        }
+    }
+
+    fclose(f);
+    *size_out = count;
+    printf("Loaded D array from %s (%lld elements)\n", filepath, count);
+    return D_loaded;
 }
 
 // Compute distance between two permutations pi and sigma
@@ -571,6 +640,7 @@ int main()
 
     // Run the main algorithm
     int *distance_array = ComputeTDistanceFromIdentity(n);
+    // print_array(distance_array, factorial(n));
     if (!distance_array)
     {
         printf("Failed to compute distance array\n");
@@ -589,14 +659,14 @@ int main()
     // int max_dist = get_max_distance(FACT);
     // printf("Maximum reachable distance = %d\n", max_dist);
 
-    for (int d = 4; d < n; d++)
-    {
-        long long result = T(n, d);
-        printf("T(%d,%d) = %lld\n", n, d, result);
-    }
+    // for (int d = 4; d < 8; d++)
+    // {
+    //     long long result = T(n, d);
+    //     printf("T(%d,%d) = %lld\n", n, d, result);
+    // }
 
-    long long result = T(n, d);
-    printf("T(%d,%d) = %lld\n", n, d, result);
+    // long long result = T(n, d);
+    // printf("T(%d,%d) = %lld\n", n, d, result);
 
     clock_t end_time = clock();
     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
