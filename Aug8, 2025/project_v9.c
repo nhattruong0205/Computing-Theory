@@ -67,6 +67,53 @@ void translocate(const int *src, int *dst, int n, int i, int j, int k)
         dst[idx++] = src[x];
 }
 
+// Load D array from the fixed directory path
+int *load_D_from_file(int n, long long *size_out)
+{
+    char filepath[512];
+    snprintf(filepath, sizeof(filepath),
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
+
+    FILE *f = fopen(filepath, "r");
+    if (!f)
+    {
+        perror("Failed to open file for reading");
+        return NULL;
+    }
+
+    // Count number of lines to determine size
+    long long count = 0;
+    int temp;
+    while (fscanf(f, "%d", &temp) == 1)
+    {
+        count++;
+    }
+    rewind(f); // go back to beginning
+
+    int *D_loaded = (int *)malloc(count * sizeof(int));
+    if (!D_loaded)
+    {
+        fclose(f);
+        perror("Memory allocation failed");
+        return NULL;
+    }
+
+    for (long long i = 0; i < count; i++)
+    {
+        if (fscanf(f, "%d", &D_loaded[i]) != 1)
+        {
+            printf("Error reading element %lld\n", i);
+            free(D_loaded);
+            fclose(f);
+            return NULL;
+        }
+    }
+
+    fclose(f);
+    *size_out = count;
+    printf("Loaded D array from %s (%lld elements)\n", filepath, count);
+    return D_loaded;
+}
 // ------------------------End of help function-----
 
 // ------------------------ Find max odd cycle-------------
@@ -683,12 +730,12 @@ void printBadTranslocationFromIdentity_Level1(int n, int *distance_array)
         int longestOddCycle_ind;
 
         long long progress = (index * 100) / size;
-        // if (progress != last_progress)
-        // {
-        //     printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
-        //     fflush(stdout);
-        //     last_progress = progress;
-        // }
+        if (progress != last_progress)
+        {
+            printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
+            fflush(stdout);
+            last_progress = progress;
+        }
 
         initialize_identity_permutation(result, n);
 
@@ -765,8 +812,8 @@ void printBadTranslocationFromIdentity_Level1(int n, int *distance_array)
                         if (neighbor_maxCycle > max_cycle)
                         {
                             max_cycle = neighbor_maxCycle;
-                            printf("Max len : %d\n", max_cycle);
-                            // print_array(tmp, n);
+                            // printf("Max len : %d\n", max_cycle);
+                            //  print_array(tmp, n);
                             compute_inverse(tmp, tmp_inv, n);
                             max_rank = rank_safe(n, tmp, tmp_inv);
                         }
@@ -779,8 +826,8 @@ void printBadTranslocationFromIdentity_Level1(int n, int *distance_array)
 
                 unrank1(n, index, pi);
 
-                printf("Bad index: %d, %d, %d, %d, %d\n", index, max_cycle, max_cycle_2, distance_array[index], distance_array[max_rank]);
-                print_array(pi, n);
+                // printf("Bad index: %d, %d, %d, %d, %d\n", index, max_cycle, max_cycle_2, distance_array[index], distance_array[max_rank]);
+                // print_array(pi, n);
                 neighbor_distance = distance_array[max_rank];
             }
         }
@@ -1015,21 +1062,27 @@ int main()
     }
     initialize_identity_permutation(pi, n);
 
-    // Run the main algorithm
-    int *distance_array = ComputeTDistanceFromIdentity(n);
-    if (!distance_array)
-    {
-        printf("Failed to compute distance array\n");
-        free(pi);
-        free_memory();
-        return 1;
-    }
+    // // Run the main algorithm
+    // int *distance_array = ComputeTDistanceFromIdentity(n);
+    // if (!distance_array)
+    // {
+    //     printf("Failed to compute distance array\n");
+    //     free(pi);
+    //     free_memory();
+    //     return 1;
+    // }
+
+    // Load save distance array
+    long long size;
+    int *distance_array = load_D_from_file(n, &size);
+    D = distance_array;
 
     // Get results
     int max_dist = get_max_distance(FACT);
     printf("Maximum reachable distance = %d\n", max_dist);
 
-    printBadTranslocationFromIdentity_Level1(n, distance_array);
+    //    printBadTranslocationFromIdentity_Level1(n, distance_array);
+    printBadTranslocationFromIdentity(n, distance_array);
 
     // int max_cycle = computeMaxCycle(pi);
     // printf("Max cycles: %d", max_cycle);
