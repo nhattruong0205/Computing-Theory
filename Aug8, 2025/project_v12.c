@@ -1150,6 +1150,7 @@ int main()
     //     free_memory();
     //     return 1;
     // }
+    
     // Load save distance array
     long long size;
     int *distance_array = load_D_from_file(n, &size);

@@ -103,6 +103,53 @@ int computeMaxLen(int pi[])
     return max_len;
 }
 
+// Load D array from the fixed directory path
+int *load_D_from_file(int n, long long *size_out)
+{
+    char filepath[512];
+    snprintf(filepath, sizeof(filepath),
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
+
+    FILE *f = fopen(filepath, "r");
+    if (!f)
+    {
+        perror("Failed to open file for reading");
+        return NULL;
+    }
+
+    // Count number of lines to determine size
+    long long count = 0;
+    int temp;
+    while (fscanf(f, "%d", &temp) == 1)
+    {
+        count++;
+    }
+    rewind(f); // go back to beginning
+
+    int *D_loaded = (int *)malloc(count * sizeof(int));
+    if (!D_loaded)
+    {
+        fclose(f);
+        perror("Memory allocation failed");
+        return NULL;
+    }
+
+    for (long long i = 0; i < count; i++)
+    {
+        if (fscanf(f, "%d", &D_loaded[i]) != 1)
+        {
+            printf("Error reading element %lld\n", i);
+            free(D_loaded);
+            fclose(f);
+            return NULL;
+        }
+    }
+
+    fclose(f);
+    *size_out = count;
+    printf("Loaded D array from %s (%lld elements)\n", filepath, count);
+    return D_loaded;
+}
 // ------------------------End of help function-----
 
 //------------- Begin of queue functions----------------
@@ -750,22 +797,27 @@ int main()
     }
     initialize_identity_permutation(pi, n);
 
-    // Run the main algorithm
-    int *distance_array = ComputeTDistanceFromIdentity(n);
-    if (!distance_array)
-    {
-        printf("Failed to compute distance array\n");
-        free(pi);
-        free_memory();
-        return 1;
-    }
+    // // Run the main algorithm
+    // int *distance_array = ComputeTDistanceFromIdentity(n);
+    // if (!distance_array)
+    // {
+    //     printf("Failed to compute distance array\n");
+    //     free(pi);
+    //     free_memory();
+    //     return 1;
+    // }
+
+    // Load save distance array
+    long long size;
+    int *distance_array = load_D_from_file(n, &size);
+    D = distance_array;
 
     // Get results
     int max_dist = get_max_distance(FACT);
     printf("Maximum reachable distance = %d\n", max_dist);
 
-    // printBadTranslocationFromIdentity(n, distance_array);
-    printBadTranslocationFromIdentity_Level1(n, distance_array);
+    printBadTranslocationFromIdentity(n, distance_array);
+    // printBadTranslocationFromIdentity_Level1(n, distance_array);
 
     clock_t end_time = clock();
     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
