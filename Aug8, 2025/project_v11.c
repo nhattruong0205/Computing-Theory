@@ -528,7 +528,7 @@ int *load_D_from_file(int n, long long *size_out)
         return NULL;
     }
 
-    // Count number of lines to determine size
+    // Count lines to determine size
     long long count = 0;
     int temp;
     while (fscanf(f, "%d", &temp) == 1)

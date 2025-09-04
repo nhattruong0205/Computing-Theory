@@ -446,10 +446,10 @@ int *ComputeTDistanceFromIdentity(int n)
     free(pi);
     free(pi_inv);
 
-    char filename[512];
-    snprintf(filename, sizeof(filename),
-             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
-    save_D_to_file(filename, D, FACT);
+    // char filename[512];
+    // snprintf(filename, sizeof(filename),
+    //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
+    // save_D_to_file(filename, D, FACT);
     return D;
 }
 

@@ -914,6 +914,19 @@ void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array
     printf("Number of bad permutation: %d\n", count);
 }
 
+long long countPermutationsAtExactDistance(long long size, int *D, int d)
+{
+    long long count = 0;
+    for (long long i = 0; i < size; i++)
+    {
+        if (D[i] == d)
+        {
+            count++;
+        }
+    }
+    return count;
+}
+
 // void printBadTranslocationFromIdentity(int n, int *distance_array)
 // {
 //     int *pi = (int *)malloc(n * sizeof(int));
@@ -1150,19 +1163,30 @@ int main()
     //     free_memory();
     //     return 1;
     // }
-    
+
     // Load save distance array
-    long long size;
+    long long size = factorial(n);
+
     int *distance_array = load_D_from_file(n, &size);
     D = distance_array;
-    // Get results
-    int max_dist = get_max_distance(FACT);
-    printf("Maximum reachable distance = %d\n", max_dist);
 
-    printBadTranslocationFromIdentityCombined_Level1(n, distance_array);
+    //-------------- Count number of permutation of size n at distance from 1 to 7 ---------
+    printf("When n= %d\n", n);
+    for (int d = 0; d < 8; d++)
+    {
+        long long num = countPermutationsAtExactDistance(size, D, d);
+        printf("distance %d = %lld\n", d, num);
+    }
+    //-------------- End of Count number of permutation of size n at distance from 1 to 7 ---------
 
-    // int max_cycle = computeMaxCycle(pi);
-    // printf("Max cycles: %d", max_cycle);
+    //----------- Print bad translocation combined level 1
+    // // Get results
+    // int max_dist = get_max_distance(FACT);
+    // printf("Maximum reachable distance = %d\n", max_dist);
+
+    // printBadTranslocationFromIdentityCombined_Level1(n, distance_array);
+
+    //------------ End of print bad translocation combined level 1
 
     clock_t end_time = clock();
     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
