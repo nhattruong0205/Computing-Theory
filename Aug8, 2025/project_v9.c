@@ -862,8 +862,6 @@ void printBadTranslocationFromIdentity(int n, int *distance_array)
         int neighbor_maxCycle;
         int result[MAX_N];
         int pi_shifted[MAX_N];
-        int longestOddCycle_len = 0;
-        int longestOddCycle_ind;
 
         long long progress = (index * 100) / size;
         if (progress != last_progress)
