@@ -1350,22 +1350,22 @@ int main()
     int *distance_array = load_D_from_file(n, &size);
     D = distance_array;
 
-    // //-------------- Count number of permutation of size n at distance from 1 to 7 ---------
-    // printf("When n= %d\n", n);
-    // for (int d = 0; d < 8; d++)
-    // {
-    //     long long num = countPermutationsAtExactDistance(size, D, d);
-    //     printf("distance %d = %lld\n", d, num);
-    // }
-    // //-------------- End of Count number of permutation of size n at distance from 1 to 7 ---------
+    //-------------- Count number of permutation of size n at distance from 1 to 7 ---------
+    printf("When n= %d\n", n);
+    for (int d = 0; d < 8; d++)
+    {
+        long long num = countPermutationsAtExactDistance(size, D, d);
+        printf("distance %d = %lld\n", d, num);
+    }
+    //-------------- End of Count number of permutation of size n at distance from 1 to 7 ---------
 
-    //----------- Print bad translocation combined level 1
-    // Get results
-    int max_dist = get_max_distance(FACT);
-    printf("Maximum reachable distance = %d\n", max_dist);
+    // //----------- Print bad translocation combined level 1
+    // // Get results
+    // int max_dist = get_max_distance(FACT);
+    // printf("Maximum reachable distance = %d\n", max_dist);
 
-    printf("-----Level 2 combined of n = %d---\n", n);
-    printBadTranslocationFromIdentityCombined_Level2(n, distance_array);
+    // printf("-----Level 2 combined of n = %d---\n", n);
+    // printBadTranslocationFromIdentityCombined_Level2(n, distance_array);
 
     //  printf("-----Level 1 combined of n = %d---\n", n);
     //  printBadTranslocationFromIdentityCombined_Level1(n, distance_array);

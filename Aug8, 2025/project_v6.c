@@ -633,7 +633,7 @@ void printBadTranslocationFromIdentity_Level1(int n, int *distance_array)
     printf("Number of bad permutation: %d\n", count);
 }
 
-void printBadTranslocationFromIdentity(int n, int *distance_array)
+void printBadTranslocationFromIdentity_level2(int n, int *distance_array)
 {
     int *pi = (int *)malloc(n * sizeof(int));
     int *pi_inv = (int *)malloc(n * sizeof(int));
@@ -816,7 +816,7 @@ int main()
     int max_dist = get_max_distance(FACT);
     printf("Maximum reachable distance = %d\n", max_dist);
 
-    printBadTranslocationFromIdentity(n, distance_array);
+    printBadTranslocationFromIdentity_level2(n, distance_array);
     // printBadTranslocationFromIdentity_Level1(n, distance_array);
 
     clock_t end_time = clock();
