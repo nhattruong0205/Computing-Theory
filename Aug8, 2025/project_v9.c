@@ -986,6 +986,8 @@ void printBadTranslocationFromIdentity_Level2(int n, int *distance_array)
             }
         }
     }
+    printf("\n");
+    printf("Odd cycles level-2 with n = %d\n", n);
     printf("Number of bad permutation: %d\n", count);
 }
 

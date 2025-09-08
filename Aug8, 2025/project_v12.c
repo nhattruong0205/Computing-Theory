@@ -800,13 +800,13 @@ void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array
         // if (index != pid)
         {
 
-            // long long progress = (index * 100) / size;
-            // if (progress != last_progress)
-            // {
-            //     printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
-            //     fflush(stdout);
-            //     last_progress = progress;
-            // }
+            long long progress = (index * 100) / size;
+            if (progress != last_progress)
+            {
+                printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
+                fflush(stdout);
+                last_progress = progress;
+            }
 
             initialize_identity_permutation(pi, n);
 
@@ -859,13 +859,8 @@ void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array
                         for (int x = k + 1; x < n; ++x)
                             tmp[idx++] = pi[x];
 
-                        // printf("Its neighbors");
-                        // print_array(tmp, n);
-                        // printf("\n");
-
                         neighbor_sub_len = longest_increasing_contiguous_subsequence(tmp, n);
 
-                        printf("Neighbor_len= %d \t max_len= %d\n", neighbor_sub_len, max_len);
                         if (neighbor_sub_len > max_len)
                         {
                             max_len = neighbor_sub_len;
@@ -875,6 +870,7 @@ void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array
                         }
                         else if (neighbor_sub_len == max_len)
                         {
+                            // ------------Calculate current max_cycle ----------
                             int temp_perm[MAX_N];
                             int temp_perm_shift[MAX_N];
 
@@ -889,13 +885,18 @@ void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array
                             build_gray_edges_identity(adj, deg, n);
                             max_cycle = count_odd_cycles(adj, n);
 
+                            // ------------End of Calculate current max_cycle ----------
+
+                            // ------------Calculate current neighbor_maxCycle ----------
+
                             shift_permutation_by_one(tmp, tmp_shift, n);
 
-                            // printf("Building edges...\n");
                             reset_graph(n, adj, deg);
                             build_black_edges_from_perm(adj, deg, tmp_shift, n); // e.g., 2--11, 12--9, ...
                             build_gray_edges_identity(adj, deg, n);              // e.g., 2--3, 4--5, ..., 14--1
                             neighbor_maxCycle = count_odd_cycles(adj, n);
+
+                            // ------------End of calculate current neighbor_maxCycle ----------
 
                             if (neighbor_maxCycle > max_cycle)
                             {
@@ -914,12 +915,14 @@ void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array
 
                 unrank1(n, index, pi);
 
-                // printf("Bad index: %d, %d, %d, %d, %d\n", index, max_len, max_len_2, distance_array[index], distance_array[max_rank]);
-                // print_array(pi, n);
                 neighbor_distance = distance_array[max_rank];
             }
         }
     }
+    printf("\n");
+
+    printf("Max_len + Odd Cycle level-2 with n = %d\n", n);
+
     printf("Number of bad permutation: %d\n", count);
 }
 
@@ -986,7 +989,6 @@ void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array
             build_gray_edges_identity(adj, deg, n);               // e.g., 2--3, 4--5, ..., 14--1
             current_maxCycle = count_odd_cycles(adj, n);
             // printf("Current max cycle\n: %d", current_maxCycle);
-            //------------ Added
 
             current_distance = distance_array[index];
             current_sub_len = longest_increasing_contiguous_subsequence(pi, n);
@@ -994,8 +996,8 @@ void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array
             int tmp_inv[MAX_N];
             int tmp_shift[MAX_N];
             int max_rank;
-            int max_len = 0, max_len_2 = 0;
-            int max_cycle = 0, max_cycle_2 = 0;
+            int max_len = -1, max_len_2 = -1;
+            int max_cycle = -1, max_cycle_2 = -1;
 
             for (int i = 0; i < n; ++i)
                 for (int j = i + 1; j < n; ++j)
@@ -1036,6 +1038,24 @@ void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array
                         }
                         else if (neighbor_sub_len == max_len)
                         {
+                            // ------------Calculate current max_cycle ----------
+                            int temp_perm[MAX_N];
+                            int temp_perm_shift[MAX_N];
+
+                            initialize_identity_permutation(temp_perm, n);
+                            unrank1(n, max_rank, temp_perm);
+                            // compute cycle now so it's in sync
+                            reset_graph(n, adj, deg);
+
+                            shift_permutation_by_one(temp_perm, temp_perm_shift, n);
+                            reset_graph(n, adj, deg);
+                            build_black_edges_from_perm(adj, deg, temp_perm_shift, n);
+                            build_gray_edges_identity(adj, deg, n);
+                            max_cycle = count_odd_cycles(adj, n);
+
+                            // ------------End of Calculate current max_cycle ----------
+
+                            // ------------Calculate current neighbor_maxCycle ----------
                             shift_permutation_by_one(tmp, tmp_shift, n);
 
                             // printf("Building edges...\n");
@@ -1043,6 +1063,8 @@ void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array
                             build_black_edges_from_perm(adj, deg, tmp_shift, n); // e.g., 2--11, 12--9, ...
                             build_gray_edges_identity(adj, deg, n);              // e.g., 2--3, 4--5, ..., 14--1
                             neighbor_maxCycle = count_odd_cycles(adj, n);
+                            // ------------End of calculate current neighbor_maxCycle ----------
+
                             if (neighbor_maxCycle > max_cycle)
                             {
                                 max_cycle = neighbor_maxCycle;
@@ -1099,7 +1121,9 @@ void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array
             }
         }
     }
-    printf("");
+    printf("\n");
+    printf("Max_len + Odd Cycle level-2 with n = %d\n", n);
+
     printf("Number of bad permutation: %d\n", count);
 }
 
@@ -1373,11 +1397,11 @@ int main()
     // int max_dist = get_max_distance(FACT);
     // printf("Maximum reachable distance = %d\n", max_dist);
 
-    // printf("-----Level 2 combined of n = %d---\n", n);
-    // printBadTranslocationFromIdentityCombined_Level2(n, distance_array);
+    printf("-----Level 2 combined of n = %d---\n", n);
+    printBadTranslocationFromIdentityCombined_Level2(n, distance_array);
 
-    printf("-----Level 1 combined of n = %d---\n", n);
-    printBadTranslocationFromIdentityCombined_Level1(n, distance_array);
+    // printf("-----Level 1 combined of n = %d---\n", n);
+    // printBadTranslocationFromIdentityCombined_Level1(n, distance_array);
 
     //------------ End of print bad translocation combined level 1
 
