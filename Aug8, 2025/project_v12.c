@@ -869,28 +869,19 @@ void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array
                         if (neighbor_sub_len > max_len)
                         {
                             max_len = neighbor_sub_len;
-                            // printf("Max len : %d\n", max_len);
-                            // print_array(tmp, n);
+
                             compute_inverse(tmp, tmp_inv, n);
                             max_rank = rank_safe(n, tmp, tmp_inv);
-                            printf("Current max rank in greater: %d\n", max_rank);
+
+                            // compute cycle now so it's in sync
+                            shift_permutation_by_one(tmp, tmp_shift, n);
+                            reset_graph(n, adj, deg);
+                            build_black_edges_from_perm(adj, deg, tmp_shift, n);
+                            build_gray_edges_identity(adj, deg, n);
+                            max_cycle = count_odd_cycles(adj, n);
                         }
                         else if (neighbor_sub_len == max_len)
                         {
-                            printf("Current max rank in equal (=%d)should equal to the one in greater\n", max_rank);
-
-                            // Get current permutation
-                            initialize_identity_permutation(pi, n);
-
-                            unrank1(n, max_rank, pi);
-                            printf("Current permutation");
-                            print_array(pi, n);
-                            shift_permutation_by_one(pi, pi_shifted, n);
-
-                            reset_graph(n, adj, deg);
-                            build_black_edges_from_perm(adj, deg, pi_shifted, n); // e.g., 2--11, 12--9, ...
-                            build_gray_edges_identity(adj, deg, n);               // e.g., 2--3, 4--5, ..., 14--1
-                            max_cycle = count_odd_cycles(adj, n);
 
                             shift_permutation_by_one(tmp, tmp_shift, n);
 
@@ -900,21 +891,16 @@ void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array
                             build_gray_edges_identity(adj, deg, n);              // e.g., 2--3, 4--5, ..., 14--1
                             neighbor_maxCycle = count_odd_cycles(adj, n);
 
-                            printf("neighbor_maxCycle= %d \t max_cycle= %d\n", neighbor_maxCycle, max_cycle);
-
                             if (neighbor_maxCycle > max_cycle)
                             {
                                 max_cycle = neighbor_maxCycle;
-                                // printf("Max len : %d\n", max_cycle);
-                                printf("Pemrutation updated");
-                                print_array(tmp, n);
+
                                 compute_inverse(tmp, tmp_inv, n);
                                 max_rank = rank_safe(n, tmp, tmp_inv);
                                 printf("Updated max rank: %d\n", max_rank);
                                 printf("Updated max cycle: %d\n", max_cycle);
                             }
                         }
-                        // printf("Current sublen: %d\n", current_sub_len);
                     }
             if (distance_array[max_rank] != (distance_array[index] - 1))
             {
