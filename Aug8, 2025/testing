@@ -332,3 +332,201 @@
 
 //     printf("Number of bad permutation: %d\n", count);
 // }
+
+void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array)
+{
+    int *pi = (int *)malloc(n * sizeof(int));
+    int *pi_inv = (int *)malloc(n * sizeof(int));
+
+    long long size = factorial(n);
+
+    initialize_identity_permutation(pi, n);
+    // print_array(pi, n);
+    compute_inverse(pi, pi_inv, n);
+
+    int pid = rank_safe(n, pi, pi_inv);
+    printf("PiD: %d\n", pid);
+    int count = 0;
+    long long last_progress = -1;
+
+    for (int index = 0; index < size; ++index)
+    // int index = 4369;
+
+    {
+        int current_distance;
+        int current_sub_len;
+        int current_maxCycle;
+        int neighbor_distance;
+        int neighbor_maxCycle;
+        int neighbor_sub_len;
+        int result[MAX_N];
+        int pi_shifted[MAX_N];
+
+        initialize_identity_permutation(result, n);
+
+        // if (distance_array[index] == 0)
+        //     continue;
+
+        initialize_identity_permutation(pi, n);
+        unrank1(n, index, pi);
+        // print_array(pi, n);
+        int (*adj)[2] = calloc(2 * n + 1, sizeof *adj);
+        int *deg = calloc(2 * n + 1, sizeof *deg);
+
+        shift_permutation_by_one(pi, pi_shifted, n);
+        build_black_edges_from_perm(adj, deg, pi_shifted, n);
+        build_gray_edges_identity(adj, deg, n);
+        current_maxCycle = count_odd_cycles(adj, n);
+
+        current_distance = distance_array[index];
+        current_sub_len = longest_increasing_contiguous_subsequence(pi, n);
+
+        int tmp[MAX_N];
+        int tmp_inv[MAX_N];
+        int tmp_shift[MAX_N];
+        int max_rank = -1;
+        int max_len = -1, max_len_2 = -1;
+        int max_cycle = -1, max_cycle_2 = -1;
+
+        for (int i = 0; i < n; ++i)
+            for (int j = i + 1; j < n; ++j)
+                for (int k = j; k < n; ++k)
+                {
+                    /* Build translocated permutation */
+                    int idx = 0;
+
+                    /* 1. Prefix: [0..i-1] */
+                    for (int x = 0; x < i; ++x)
+                        tmp[idx++] = pi[x];
+
+                    /* 2. Block: [j..k] */
+                    for (int x = j; x <= k; ++x)
+                        tmp[idx++] = pi[x];
+
+                    /* 3. Middle: [i..j-1] */
+                    for (int x = i; x < j; ++x)
+                        tmp[idx++] = pi[x];
+
+                    /* 4. Suffix: [k+1..n-1] */
+                    for (int x = k + 1; x < n; ++x)
+                        tmp[idx++] = pi[x];
+
+                    neighbor_sub_len = longest_increasing_contiguous_subsequence(tmp, n);
+
+                    // compute_inverse(tmp, tmp_inv, n);
+
+                    // int array_rank = rank_safe(n, tmp, tmp_inv);
+                    // print_array(tmp, n);
+
+                    // printf("Array index: %d", array_rank);
+                    if (neighbor_sub_len > max_len)
+                    {
+                        // New best subsequence length found
+                        max_len = neighbor_sub_len;
+                        compute_inverse(tmp, tmp_inv, n);
+                        max_rank = rank_safe(n, tmp, tmp_inv);
+                        max_len_2 = computeMaxLen(tmp);
+
+                        // Calculate cycles for this new best candidate
+                        shift_permutation_by_one(tmp, tmp_shift, n);
+                        reset_graph(n, adj, deg);
+                        build_black_edges_from_perm(adj, deg, tmp_shift, n);
+                        build_gray_edges_identity(adj, deg, n);
+                        max_cycle = count_odd_cycles(adj, n);
+                        max_cycle_2 = computeMostOddCycle(tmp_shift, n);
+                        // printf("Max rank max len >: %d", max_rank);
+                    }
+                    else if (neighbor_sub_len == max_len)
+                    {
+                        // Tie in subsequence length - compare cycles
+                        shift_permutation_by_one(tmp, tmp_shift, n);
+                        reset_graph(n, adj, deg);
+                        build_black_edges_from_perm(adj, deg, tmp_shift, n);
+                        build_gray_edges_identity(adj, deg, n);
+                        neighbor_maxCycle = count_odd_cycles(adj, n);
+
+                        if (neighbor_maxCycle > max_cycle)
+                        {
+                            // Better cycle count
+                            max_cycle = neighbor_maxCycle;
+                            compute_inverse(tmp, tmp_inv, n);
+                            max_rank = rank_safe(n, tmp, tmp_inv);
+                            max_len_2 = computeMaxLen(tmp); // FIXED: Recalculate max_len_2
+                            max_cycle_2 = computeMostOddCycle(tmp_shift, n);
+                            // printf("Max rank max cycle >: %d", max_rank);
+                        }
+                        else if (neighbor_maxCycle == max_cycle)
+                        {
+                            // Tie in cycles - compare second level metrics
+                            int neighbor_2_len = computeMaxLen(tmp);
+
+                            if (neighbor_2_len > max_len_2)
+                            {
+                                compute_inverse(tmp, tmp_inv, n);
+                                max_rank = rank_safe(n, tmp, tmp_inv);
+                                max_len_2 = neighbor_2_len;
+                                max_cycle_2 = computeMostOddCycle(tmp_shift, n);
+                                // printf("Max rank max len 2>: %d", max_rank);
+                            }
+                            else if (neighbor_2_len == max_len_2)
+                            {
+                                int neighbor_2_maxCycle = computeMostOddCycle(tmp_shift, n);
+
+                                if (neighbor_2_maxCycle > max_cycle_2)
+                                {
+                                    compute_inverse(tmp, tmp_inv, n);
+                                    max_rank = rank_safe(n, tmp, tmp_inv);
+                                    max_cycle_2 = neighbor_2_maxCycle;
+                                    // printf("Max rank max cycle 2 >: %d", max_rank);
+
+                                    // max_len_2 stays the same since neighbor_2_len == max_len_2
+                                }
+                            }
+                        }
+                    }
+                }
+
+        // Check if we found any valid neighbor
+        // if (max_rank == -1)
+        // {
+        //     printf("Warning: No translocation found for index %d\n", index);
+        //     free(adj);
+        //     free(deg);
+        //     continue;
+        // }
+
+        if (distance_array[max_rank] != (distance_array[index] - 1))
+        {
+            // printf("\n=== Bad permutation check ===\n");
+
+            // // Current permutation
+            // printf("Index: %d\n", index);
+            // printf("Current distance = %d\n", distance_array[index]);
+            // printf("Current permutation: ");
+            // print_array(pi, n);
+
+            // Neighbor permutation
+            int neighbor[MAX_N];
+            initialize_identity_permutation(neighbor, n);
+            unrank1(n, max_rank, neighbor); // reconstruct from rank
+            // printf("Neighbor index = %d\n", max_rank);
+            // printf("Neighbor distance = %d (expected %d)\n",
+            //        distance_array[max_rank], distance_array[index] - 1);
+            // printf("Neighbor permutation: ");
+            // print_array(neighbor, n);
+
+            // // Tie-break metrics
+            // printf("Tie-break metrics: len=%d, cycle=%d, len2=%d, cycle2=%d\n",
+            //        max_len, max_cycle, max_len_2, max_cycle_2);
+
+            count++;
+        }
+    }
+
+    printf("\n");
+    printf("Max_len + Odd Cycle level-2 with n = %d\n", n);
+    printf("Number of bad permutation: %d\n", count);
+
+    free(pi);
+    free(pi_inv);
+}
