@@ -480,6 +480,46 @@ void reset_graph(int n, int adj[][2], int *deg)
         adj[v][1] = 0;
     }
 }
+int computeMostOddCycle(int *perm, int n)
+{
+    int *tmp = malloc(n * sizeof(int));
+    int *best_perm = malloc(n * sizeof(int));
+    int best_i = -1, best_j = -1, best_k = -1;
+    int max_odd = -1;
+
+    int (*adj)[2] = calloc(2 * n + 1, sizeof *adj);
+    int *deg = calloc(2 * n + 1, sizeof *deg);
+
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = i + 1; j < n; ++j)
+        {
+            for (int k = j; k < n; ++k)
+            {
+                translocate(perm, tmp, n, i, j, k);
+
+                memset(adj, 0, (2 * n + 1) * 2 * sizeof(int));
+                memset(deg, 0, (2 * n + 1) * sizeof(int));
+
+                build_black_edges_from_perm(adj, deg, tmp, n);
+                build_gray_edges_identity(adj, deg, n);
+
+                int odd = count_odd_cycles(adj, n);
+
+                if (odd > max_odd)
+                {
+                    max_odd = odd;
+                    best_i = i;
+                    best_j = j;
+                    best_k = k;
+                    memcpy(best_perm, tmp, n * sizeof(int));
+                }
+            }
+        }
+    }
+
+    return max_odd;
+}
 
 //==================== End of find max cycle ====================
 
@@ -553,6 +593,542 @@ BestNeighborMetrics findBestNeighborMetrics(int *perm, int n)
 }
 
 // ============== Print bad permutation ==================
+void printBadTranslocationMaxConsecutiveValue_Level1(int n, int *distance_array)
+{
+    int *pi = (int *)malloc(n * sizeof(int));
+    int *pi_inv = (int *)malloc(n * sizeof(int));
+
+    long long size = factorial(n);
+
+    initialize_identity_permutation(pi, n);
+    print_array(pi, n);
+    compute_inverse(pi, pi_inv, n);
+    // print_array(pi_inv, n);
+
+    int pid = rank_safe(n, pi, pi_inv);
+
+    printf("PiD: %d\n", pid);
+    int count = 0;
+    long long last_progress = -1;
+
+    for (int index = 0; index < size; ++index)
+    // for (int index = 3; index < size - 1; ++index)
+    {
+        int current_distance;
+        int current_sub_len;
+        int neighbor_distance;
+        int neighbor_sub_len;
+        int result[MAX_N];
+        int longestSubSequence_len = 0;
+        int longestSubSequence_ind;
+
+        initialize_identity_permutation(result, n);
+
+        if (distance_array[index] == 0)
+            continue;
+        // if (index != pid)
+        {
+
+            long long progress = (index * 100) / size;
+            if (progress != last_progress)
+            {
+                printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
+                fflush(stdout);
+                last_progress = progress;
+            }
+
+            initialize_identity_permutation(pi, n);
+
+            unrank1(n, index, pi);
+            // printf("Current permutation");
+            // print_array(pi, n);
+            // printf("\n");
+
+            current_distance = distance_array[index];
+            current_sub_len = longest_increasing_consecutive_values(pi, n);
+            int tmp[MAX_N];
+            int tmp_inv[MAX_N];
+            int max_len = 0, max_rank, max_len_2 = 0;
+
+            for (int i = 0; i < n; ++i)
+                for (int j = i + 1; j < n; ++j)
+                    for (int k = j; k < n; ++k)
+                    {
+                        /* Build translocated permutation */
+                        int idx = 0;
+
+                        /* 1. Prefix: [0..i-1] */
+                        for (int x = 0; x < i; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 2. Block: [j..k] */
+                        for (int x = j; x <= k; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 3. Middle: [i..j-1] */
+                        for (int x = i; x < j; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 4. Suffix: [k+1..n-1] */
+                        for (int x = k + 1; x < n; ++x)
+                            tmp[idx++] = pi[x];
+
+                        // printf("Its neighbors");
+                        // print_array(tmp, n);
+                        // printf("\n");
+
+                        neighbor_sub_len = longest_increasing_consecutive_values(tmp, n);
+                        if (neighbor_sub_len > max_len)
+                        {
+                            max_len = neighbor_sub_len;
+                            // printf("Max len : %d\n", max_len);
+                            // print_array(tmp, n);
+                            compute_inverse(tmp, tmp_inv, n);
+                            max_rank = rank_safe(n, tmp, tmp_inv);
+                        }
+                        // printf("Current sublen: %d\n", current_sub_len);
+                    }
+            if (distance_array[max_rank] != (distance_array[index] - 1))
+            {
+                count++;
+
+                initialize_identity_permutation(pi, n);
+
+                unrank1(n, index, pi);
+
+                // printf("Bad index: %d, %d, %d, %d, %d\n", index, max_len, max_len_2, distance_array[index], distance_array[max_rank]);
+                // print_array(pi, n);
+                neighbor_distance = distance_array[max_rank];
+            }
+        }
+    }
+    printf("\nNumber of bad permutation: %d\n", count);
+}
+
+void printBadTranslocationMaxConsecutiveValue_Level2(int n, int *distance_array)
+{
+    int *pi = (int *)malloc(n * sizeof(int));
+    int *pi_inv = (int *)malloc(n * sizeof(int));
+
+    long long size = factorial(n);
+
+    initialize_identity_permutation(pi, n);
+    print_array(pi, n);
+    compute_inverse(pi, pi_inv, n);
+    // print_array(pi_inv, n);
+
+    int pid = rank_safe(n, pi, pi_inv);
+
+    printf("PiD: %d\n", pid);
+    int count = 0;
+    long long last_progress = -1;
+
+    for (int index = 0; index < size; ++index)
+    // for (int index = 3; index < size - 1; ++index)
+    {
+        int current_distance;
+        int current_sub_len;
+        int neighbor_distance;
+        int neighbor_sub_len;
+        int result[MAX_N];
+        int longestSubSequence_len = 0;
+        int longestSubSequence_ind;
+
+        initialize_identity_permutation(result, n);
+
+        if (distance_array[index] == 0)
+            continue;
+        // if (index != pid)
+        {
+
+            long long progress = (index * 100) / size;
+            if (progress != last_progress)
+            {
+                printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
+                fflush(stdout);
+                last_progress = progress;
+            }
+
+            initialize_identity_permutation(pi, n);
+
+            unrank1(n, index, pi);
+            // printf("Current permutation");
+            // print_array(pi, n);
+            // printf("\n");
+
+            current_distance = distance_array[index];
+            current_sub_len = longest_increasing_consecutive_values(pi, n);
+            int tmp[MAX_N];
+            int tmp_inv[MAX_N];
+            int max_len = 0, max_rank, max_len_2 = 0;
+
+            for (int i = 0; i < n; ++i)
+                for (int j = i + 1; j < n; ++j)
+                    for (int k = j; k < n; ++k)
+                    {
+                        /* Build translocated permutation */
+                        int idx = 0;
+
+                        /* 1. Prefix: [0..i-1] */
+                        for (int x = 0; x < i; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 2. Block: [j..k] */
+                        for (int x = j; x <= k; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 3. Middle: [i..j-1] */
+                        for (int x = i; x < j; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 4. Suffix: [k+1..n-1] */
+                        for (int x = k + 1; x < n; ++x)
+                            tmp[idx++] = pi[x];
+
+                        // printf("Its neighbors");
+                        // print_array(tmp, n);
+                        // printf("\n");
+
+                        neighbor_sub_len = longest_increasing_consecutive_values(tmp, n);
+                        if (neighbor_sub_len > max_len)
+                        {
+                            max_len = neighbor_sub_len;
+                            // printf("Max len : %d\n", max_len);
+                            // print_array(tmp, n);
+                            compute_inverse(tmp, tmp_inv, n);
+                            max_rank = rank_safe(n, tmp, tmp_inv);
+                            max_len_2 = computeMaxLen(tmp, n);
+                        }
+                        else
+                        {
+                            if (neighbor_sub_len == max_len)
+                            {
+                                int neighbor_2_len = computeMaxLen(tmp, n);
+
+                                if (neighbor_2_len > max_len_2)
+                                {
+                                    compute_inverse(tmp, tmp_inv, n);
+                                    max_rank = rank_safe(n, tmp, tmp_inv);
+                                    max_len_2 = neighbor_2_len;
+                                }
+                            }
+                        }
+
+                        // printf("Neighbor distance: %d", neighbor_distance);
+                        // printf("Current distance: %d\n", current_distance);
+
+                        // printf("Neighbor sublen: %d", neighbor_sub_len);
+                        // printf("Current sublen: %d\n", current_sub_len);
+                    }
+            if (distance_array[max_rank] != (distance_array[index] - 1))
+            {
+                count++;
+
+                initialize_identity_permutation(pi, n);
+
+                unrank1(n, index, pi);
+
+                // printf("Bad index: %d, %d, %d, %d, %d\n", index, max_len, max_len_2, distance_array[index], distance_array[max_rank]);
+                // print_array(pi, n);
+                neighbor_distance = distance_array[max_rank];
+            }
+        }
+    }
+    printf("\nNumber of bad permutation: %d\n", count);
+}
+
+void printBadTranslocationOddCycle_Level1(int n, int *distance_array)
+{
+    int *pi = (int *)malloc(n * sizeof(int));
+    int *pi_inv = (int *)malloc(n * sizeof(int));
+
+    long long size = factorial(n);
+
+    initialize_identity_permutation(pi, n);
+    // print_array(pi, n);
+    compute_inverse(pi, pi_inv, n);
+    // print_array(pi_inv, n);
+
+    int pid = rank_safe(n, pi, pi_inv);
+
+    printf("PiD: %d\n", pid);
+    int count = 0;
+    long long last_progress = -1;
+
+    for (int index = 0; index < size; ++index)
+    // for (int index = 3; index < size - 1; ++index)
+    {
+        int current_distance;
+        int current_maxCycle;
+        int neighbor_distance;
+        int neighbor_maxCycle;
+        int result[MAX_N];
+        int pi_shifted[MAX_N];
+        int longestOddCycle_len = 0;
+        int longestOddCycle_ind;
+
+        long long progress = (index * 100) / size;
+        if (progress != last_progress)
+        {
+            printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
+            fflush(stdout);
+            last_progress = progress;
+        }
+
+        initialize_identity_permutation(result, n);
+
+        if (distance_array[index] == 0)
+            continue;
+        // if (index != pid)
+        {
+            initialize_identity_permutation(pi, n);
+
+            unrank1(n, index, pi);
+            // printf("Current permutation");
+            // print_array(pi, n);
+            // printf("\n");
+
+            current_distance = distance_array[index];
+            // printf("Current distance: %d", current_distance);
+            //------------ Added
+            int (*adj)[2] = calloc(2 * n + 1, sizeof *adj);
+            int *deg = calloc(2 * n + 1, sizeof *deg);
+
+            shift_permutation_by_one(pi, pi_shifted, n);
+            // print_array(pi_shifted, n);
+            //  printf("Building edges...\n");
+            build_black_edges_from_perm(adj, deg, pi_shifted, n); // e.g., 2--11, 12--9, ...
+            build_gray_edges_identity(adj, deg, n);               // e.g., 2--3, 4--5, ..., 14--1
+            current_maxCycle = count_odd_cycles(adj, n);
+            // printf("\n");
+
+            // printf("Current max cycle\n: %d", current_maxCycle);
+            // printf("\n");
+
+            //------------ Added
+
+            int tmp[MAX_N];
+            int tmp_shift[MAX_N];
+            int tmp_inv[MAX_N];
+            int max_cycle = 0, max_rank, max_cycle_2 = 0;
+
+            for (int i = 0; i < n; ++i)
+                for (int j = i + 1; j < n; ++j)
+                    for (int k = j; k < n; ++k)
+                    {
+                        /* Build translocated permutation */
+                        int idx = 0;
+
+                        /* 1. Prefix: [0..i-1] */
+                        for (int x = 0; x < i; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 2. Block: [j..k] */
+                        for (int x = j; x <= k; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 3. Middle: [i..j-1] */
+                        for (int x = i; x < j; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 4. Suffix: [k+1..n-1] */
+                        for (int x = k + 1; x < n; ++x)
+                            tmp[idx++] = pi[x];
+
+                        // printf("Its neighbors");
+                        // print_array(tmp, n);
+                        // printf("\n");
+
+                        shift_permutation_by_one(tmp, tmp_shift, n);
+
+                        // printf("Building edges...\n");
+                        reset_graph(n, adj, deg);
+                        build_black_edges_from_perm(adj, deg, tmp_shift, n); // e.g., 2--11, 12--9, ...
+                        build_gray_edges_identity(adj, deg, n);              // e.g., 2--3, 4--5, ..., 14--1
+                        neighbor_maxCycle = count_odd_cycles(adj, n);
+
+                        if (neighbor_maxCycle > max_cycle)
+                        {
+                            max_cycle = neighbor_maxCycle;
+                            // printf("Max len : %d\n", max_cycle);
+                            //  print_array(tmp, n);
+                            compute_inverse(tmp, tmp_inv, n);
+                            max_rank = rank_safe(n, tmp, tmp_inv);
+                        }
+                    }
+            if (distance_array[max_rank] != (distance_array[index] - 1))
+            {
+                count++;
+
+                initialize_identity_permutation(pi, n);
+
+                unrank1(n, index, pi);
+
+                // printf("Bad index: %d, %d, %d, %d, %d\n", index, max_cycle, max_cycle_2, distance_array[index], distance_array[max_rank]);
+                // print_array(pi, n);
+                neighbor_distance = distance_array[max_rank];
+            }
+        }
+    }
+    printf("Number of bad permutation: %d\n", count);
+}
+
+void printBadTranslocationOddCycle_Level2(int n, int *distance_array)
+{
+    int *pi = (int *)malloc(n * sizeof(int));
+    int *pi_inv = (int *)malloc(n * sizeof(int));
+
+    long long size = factorial(n);
+
+    initialize_identity_permutation(pi, n);
+    // print_array(pi, n);
+    compute_inverse(pi, pi_inv, n);
+    // print_array(pi_inv, n);
+
+    int pid = rank_safe(n, pi, pi_inv);
+
+    printf("PiD: %d\n", pid);
+    int count = 0;
+    long long last_progress = -1;
+
+    for (int index = 0; index < size; ++index)
+    // for (int index = 3; index < size - 1; ++index)
+    {
+        int current_distance;
+        int current_maxCycle;
+        int neighbor_distance;
+        int neighbor_maxCycle;
+        int result[MAX_N];
+        int pi_shifted[MAX_N];
+
+        long long progress = (index * 100) / size;
+        if (progress != last_progress)
+        {
+            printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
+            fflush(stdout);
+            last_progress = progress;
+        }
+
+        initialize_identity_permutation(result, n);
+
+        if (distance_array[index] == 0)
+            continue;
+        // if (index != pid)
+        {
+            initialize_identity_permutation(pi, n);
+
+            unrank1(n, index, pi);
+            // printf("Current permutation");
+            // print_array(pi, n);
+            // printf("\n");
+
+            current_distance = distance_array[index];
+            // printf("Current distance: %d", current_distance);
+            //------------ Added
+            int (*adj)[2] = calloc(2 * n + 1, sizeof *adj);
+            int *deg = calloc(2 * n + 1, sizeof *deg);
+
+            shift_permutation_by_one(pi, pi_shifted, n);
+            // print_array(pi_shifted, n);
+            //  printf("Building edges...\n");
+            build_black_edges_from_perm(adj, deg, pi_shifted, n); // e.g., 2--11, 12--9, ...
+            build_gray_edges_identity(adj, deg, n);               // e.g., 2--3, 4--5, ..., 14--1
+            current_maxCycle = count_odd_cycles(adj, n);
+            // printf("Current max cycle\n: %d", current_maxCycle);
+            //------------ Added
+
+            int tmp[MAX_N];
+            int tmp_shift[MAX_N];
+            int tmp_inv[MAX_N];
+            int max_cycle = 0, max_rank, max_cycle_2 = 0;
+
+            for (int i = 0; i < n; ++i)
+                for (int j = i + 1; j < n; ++j)
+                    for (int k = j; k < n; ++k)
+                    {
+                        /* Build translocated permutation */
+                        int idx = 0;
+
+                        /* 1. Prefix: [0..i-1] */
+                        for (int x = 0; x < i; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 2. Block: [j..k] */
+                        for (int x = j; x <= k; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 3. Middle: [i..j-1] */
+                        for (int x = i; x < j; ++x)
+                            tmp[idx++] = pi[x];
+
+                        /* 4. Suffix: [k+1..n-1] */
+                        for (int x = k + 1; x < n; ++x)
+                            tmp[idx++] = pi[x];
+
+                        // printf("Its neighbors");
+                        // print_array(tmp, n);
+                        // printf("\n");
+
+                        shift_permutation_by_one(tmp, tmp_shift, n);
+
+                        // printf("Building edges...\n");
+                        reset_graph(n, adj, deg);
+                        build_black_edges_from_perm(adj, deg, tmp_shift, n); // e.g., 2--11, 12--9, ...
+                        build_gray_edges_identity(adj, deg, n);              // e.g., 2--3, 4--5, ..., 14--1
+                        neighbor_maxCycle = count_odd_cycles(adj, n);
+
+                        if (neighbor_maxCycle > max_cycle)
+                        {
+                            max_cycle = neighbor_maxCycle;
+                            // printf("Max len : %d\n", max_len);
+                            // print_array(tmp, n);
+                            compute_inverse(tmp, tmp_inv, n);
+                            max_rank = rank_safe(n, tmp, tmp_inv);
+
+                            shift_permutation_by_one(tmp, tmp_shift, n);
+
+                            reset_graph(n, adj, deg);
+
+                            // printf("Building edges...\n");
+                            build_black_edges_from_perm(adj, deg, tmp_shift, n); // e.g., 2--11, 12--9, ...
+                            build_gray_edges_identity(adj, deg, n);              // e.g., 2--3, 4--5, ..., 14--1
+
+                            max_cycle_2 = computeMostOddCycle(tmp_shift, n);
+                        }
+                        else
+                        {
+                            if (neighbor_maxCycle == max_cycle)
+                            {
+                                int neighbor_2_maxCycle = computeMostOddCycle(tmp_shift, n);
+
+                                if (neighbor_2_maxCycle > max_cycle_2)
+                                {
+                                    compute_inverse(tmp, tmp_inv, n);
+                                    max_rank = rank_safe(n, tmp, tmp_inv);
+                                    max_cycle_2 = neighbor_2_maxCycle;
+                                }
+                            }
+                        }
+                    }
+            if (distance_array[max_rank] != (distance_array[index] - 1))
+            {
+                count++;
+
+                initialize_identity_permutation(pi, n);
+
+                unrank1(n, index, pi);
+
+                // printf("Bad index: %d, %d, %d, %d, %d\n", index, max_cycle, max_cycle_2, distance_array[index], distance_array[max_rank]);
+                // print_array(pi, n);
+                neighbor_distance = distance_array[max_rank];
+            }
+        }
+    }
+    printf("\n");
+    printf("Odd cycles level-2 with n = %d\n", n);
+    printf("Number of bad permutation: %d\n", count);
+}
+
 void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array)
 {
     int *pi = (int *)malloc(n * sizeof(int));

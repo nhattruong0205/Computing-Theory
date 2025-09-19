@@ -5,15 +5,11 @@
 #include <string.h>
 #include <time.h>
 
-#define MAX_N 20  // max length of a permutation (increased from 10)
-#define INF 99999 // Large number represent infinity
+#define MAX_N 20 // max length of a permutation (increased from 10)
 
 // Global variables - now using pointers instead of fixed arrays
 int n;
-long long FACT;
-int *D;        // Dynamic array for distances
-int *Q;        // Dynamic array for queue
-bool *visited; // Array to track visited permutations
+int *D; // Dynamic array for distances
 
 int main()
 {
@@ -41,13 +37,35 @@ int main()
     int *distance_array = load_D_from_file(n, &size);
     D = distance_array;
 
-    // printf("-----Level 2 combined of n = %d---\n", n);
-    // printBadTranslocationFromIdentityCombined_Level2(n, distance_array);
-
-    printf("-----Level 1 combined of n = %d---\n", n);
-    printBadTranslocationFromIdentityCombined_Level1(n, distance_array);
-
-    //------------ End of print bad translocation combined level 1
+    //============ Case value depends on what you want
+    int x = 1;
+    switch (x)
+    {
+    case 1:
+        printf("-----Level 1 max consecutive value of n = %d---\n", n);
+        printBadTranslocationMaxConsecutiveValue_Level1(n, distance_array);
+        break;
+    case 2:
+        printf("-----Level 2 max consecutive value of n = %d---\n", n);
+        printBadTranslocationMaxConsecutiveValue_Level2(n, distance_array);
+        break;
+    case 3:
+        printf("-----Level 1 max odd cycle of n = %d---\n", n);
+        printBadTranslocationOddCycle_Level1(n, distance_array);
+        break;
+    case 4:
+        printf("-----Level 2 max odd cycle of n = %d---\n", n);
+        printBadTranslocationOddCycle_Level2(n, distance_array);
+        break;
+    case 5:
+        printf("-----Level 1 combined of n = %d---\n", n);
+        printBadTranslocationFromIdentityCombined_Level1(n, distance_array);
+        break;
+    case 6:
+        printf("-----Level 2 combined of n = %d---\n", n);
+        printBadTranslocationFromIdentityCombined_Level2(n, distance_array);
+        break;
+    }
 
     clock_t end_time = clock();
     double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;

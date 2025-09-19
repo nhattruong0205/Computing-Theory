@@ -11,7 +11,7 @@ void translocate(const int *src, int *dst, int n, int i, int j, int k);
 long long factorial(int n);
 void initialize_identity_permutation(int *pid, int n);
 
-//===============Calculating values (max_len, max_cycle)=============
+//===============Calculating max len=============
 int longest_increasing_consecutive_values(int *arr, int n);
 int longest_increasing_subsequence(int *arr, int n);
 int computeMaxLen(int pi[], int n);    // Using longest_increasing_consecutive_values
@@ -37,6 +37,7 @@ static void count_cycles_colored(int (*adj)[2], int n);
 int count_odd_cycles(int (*adj)[2], int n);
 void print_cycles(int (*adj)[2], int n);
 void reset_graph(int n, int adj[][2], int *deg);
+int computeMostOddCycle(int *perm, int n);
 
 // ============== Find best neighbor pairs =============
 // Structure to hold both metrics for a neighbor
@@ -50,6 +51,15 @@ typedef struct
 BestNeighborMetrics findBestNeighborMetrics(int *perm, int n);
 
 // ============== Print bad permutation ==================
+// Max len based on max consecutive values
+void printBadTranslocationMaxConsecutiveValue_Level1(int n, int *distance_array);
+void printBadTranslocationMaxConsecutiveValue_Level2(int n, int *distance_array);
+
+// Max odd cycle
+void printBadTranslocationOddCycle_Level1(int n, int *distance_array);
+void printBadTranslocationOddCycle_Level2(int n, int *distance_array);
+
+// Combine longest_increasing_consecutive_values and max_odd_cycle
 void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array);
 void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array);
 
