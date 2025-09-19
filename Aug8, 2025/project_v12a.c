@@ -835,81 +835,6 @@ int computeMostOddCycle(int *perm, int n)
     return max_odd;
 }
 
-// Structure to hold both metrics for a neighbor
-typedef struct
-{
-    int max_len;
-    int max_cycles;
-    int best_i, best_j, best_k; // Optional: track which translocation was best
-} BestNeighborMetrics;
-
-// Function that finds the single best neighbor and returns both its metrics
-BestNeighborMetrics findBestNeighborMetrics(int *perm, int n)
-{
-    int tmp[MAX_N];
-    int tmp_shift[MAX_N];
-    BestNeighborMetrics result = {-1, -1, -1, -1, -1};
-
-    // Allocate graph structures
-    int (*adj)[2] = calloc(2 * n + 1, sizeof *adj);
-    int *deg = calloc(2 * n + 1, sizeof *deg);
-
-    for (int i = 0; i < n; ++i)
-    {
-        for (int j = i + 1; j < n; ++j)
-        {
-            for (int k = j; k < n; ++k)
-            {
-                /* Build translocated permutation */
-                int idx = 0;
-
-                /* 1. Prefix: [0..i-1] */
-                for (int x = 0; x < i; ++x)
-                    tmp[idx++] = perm[x];
-
-                /* 2. Block: [j..k] */
-                for (int x = j; x <= k; ++x)
-                    tmp[idx++] = perm[x];
-
-                /* 3. Middle: [i..j-1] */
-                for (int x = i; x < j; ++x)
-                    tmp[idx++] = perm[x];
-
-                /* 4. Suffix: [k+1..n-1] */
-                for (int x = k + 1; x < n; ++x)
-                    tmp[idx++] = perm[x];
-
-                // Compute length for this neighbor
-                int neighbor_len = longest_increasing_consecutive_values(tmp, n);
-
-                // Compute cycles for this neighbor
-                shift_permutation_by_one(tmp, tmp_shift, n);
-                reset_graph(n, adj, deg);
-                build_black_edges_from_perm(adj, deg, tmp_shift, n);
-                build_gray_edges_identity(adj, deg, n);
-                int neighbor_cycles = count_odd_cycles(adj, n);
-
-                // Check if this neighbor is better using the same tie-breaking logic
-                // Priority: length first, then cycles as tie-breaker
-                if (neighbor_len > result.max_len ||
-                    (neighbor_len == result.max_len && neighbor_cycles > result.max_cycles))
-                {
-                    result.max_len = neighbor_len;
-                    result.max_cycles = neighbor_cycles;
-                    result.best_i = i;
-                    result.best_j = j;
-                    result.best_k = k;
-                }
-            }
-        }
-    }
-
-    free(adj);
-    free(deg);
-
-    return result;
-}
-
 void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array)
 {
     int *pi = (int *)malloc(n * sizeof(int));
@@ -1189,17 +1114,33 @@ void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array
                             // -----------------Update max_Cycle
                             max_cycle = neighbor_maxCycle;
 
-                            BestNeighborMetrics level2_metrics = findBestNeighborMetrics(tmp, n);
-                            max_len_2 = level2_metrics.max_len;
-                            max_cycle_2 = level2_metrics.max_cycles;
+                            // Calculate Level 2 values for the new winner
+                            max_len_2 = computeMaxLen(tmp, n);
+                            // max_len_2 = computeMaxLen_v2(tmp, n);
+
+                            shift_permutation_by_one(tmp, tmp_shift, n);
+                            reset_graph(n, adj, deg);
+                            build_black_edges_from_perm(adj, deg, tmp_shift, n);
+                            build_gray_edges_identity(adj, deg, n);
+                            max_cycle_2 = computeMostOddCycle(tmp_shift, n);
                         }
 
                         else if (neighbor_sub_len == max_len && neighbor_maxCycle == max_cycle)
                         {
 
-                            BestNeighborMetrics level2_metrics = findBestNeighborMetrics(tmp, n);
-                            int neighbor_sub_len_2 = level2_metrics.max_len;
-                            int neighbor_maxCycle_2 = level2_metrics.max_cycles;
+                            // ------------Calculate max_len_2
+                            int neighbor_sub_len_2 = computeMaxLen(tmp, n);
+                            // int neighbor_sub_len_2 = computeMaxLen_v2(tmp, n);
+
+                            // ------------Calculate neighbor_maxCycle_2 ----------
+                            shift_permutation_by_one(tmp, tmp_shift, n);
+
+                            // printf("Building edges...\n");
+                            reset_graph(n, adj, deg);
+                            build_black_edges_from_perm(adj, deg, tmp_shift, n); // e.g., 2--11, 12--9, ...
+                            build_gray_edges_identity(adj, deg, n);              // e.g., 2--3, 4--5, ..., 14--1
+
+                            int neighbor_maxCycle_2 = computeMostOddCycle(tmp_shift, n);
 
                             // ------------End of calculate current neighbor_maxCycle ----------
 
