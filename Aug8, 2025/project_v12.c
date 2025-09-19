@@ -203,6 +203,8 @@ int computeMaxLen_v2(int pi[], int n)
     return max_len;
 }
 
+
+
 // Load D array from the fixed directory path
 int *load_D_from_file(int n, long long *size_out)
 {
@@ -1115,12 +1117,12 @@ void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array
         {
 
             long long progress = (index * 100) / size;
-            // if (progress != last_progress)
-            // {
-            //     printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
-            //     fflush(stdout);
-            //     last_progress = progress;
-            // }
+            if (progress != last_progress)
+            {
+                printf("\rProgress: %lld%% (%d/%lld)", progress, index, size);
+                fflush(stdout);
+                last_progress = progress;
+            }
 
             initialize_identity_permutation(pi, n);
 
@@ -1229,7 +1231,7 @@ void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array
 
                 unrank1(n, index, pi);
 
-                printf("Bad index: %d, %d, %d, %d, %d\n", index, max_len, max_len_2, distance_array[index], distance_array[max_rank]);
+                // printf("Bad index: %d, %d, %d, %d, %d\n", index, max_len, max_len_2, distance_array[index], distance_array[max_rank]);
                 print_array(pi, n);
                 neighbor_distance = distance_array[max_rank];
             }
