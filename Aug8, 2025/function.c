@@ -222,11 +222,11 @@ int computeMaxLen_v2(int pi[], int n)
 
 // ================= Read distances array from files ============
 // Load D array from the fixed directory path
-int *load_D_from_file_mod_lex(int n, long long *size_out)
+int *load_D_from_file_LehmerCode(int n, long long *size_out)
 {
     char filepath[512];
     snprintf(filepath, sizeof(filepath),
-             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLehmerCodeRank/distances_n%d.txt", n);
 
     FILE *f = fopen(filepath, "r");
     if (!f)
@@ -688,6 +688,86 @@ BestNeighborMetrics findBestNeighborMetrics(int *perm, int n)
     return result;
 }
 
+// ================= Queue functions ===========================
+// Function to initialize the queue
+void initQueue()
+{
+    front = 0;
+    rear = 0;
+}
+
+// Function to check if the queue is full
+bool isFull()
+{
+    return rear >= FACT; // Use FACT instead of MAX_SIZE
+}
+
+// Function to check if the queue is empty
+bool isEmpty()
+{
+    return front == rear;
+}
+
+// Add a rank (integer) to the queue
+void enqueue(int rank)
+{
+    if (isFull())
+    {
+        printf("Queue overflow! Cannot add rank %d\n", rank);
+        printf("Current queue size: %lld, FACT: %lld\n", rear - front, FACT);
+        return;
+    }
+    Q[rear] = rank;
+    rear++;
+}
+
+// Remove and return a rank from the queue
+int dequeue()
+{
+    if (isEmpty())
+    {
+        printf("Queue underflow! Queue is empty\n");
+        return -1;
+    }
+    int rank = Q[front];
+    front++;
+    return rank;
+}
+
+// Get the current size of the queue
+long long queueSize()
+{
+    return rear - front;
+}
+
+// Function to print the current queue contents (limited output for large queues)
+void printQueue()
+{
+    if (isEmpty())
+    {
+        printf("Queue is empty\n");
+        return;
+    }
+
+    printf("Queue contents (size=%lld): [", queueSize());
+    long long print_limit = queueSize() < 20 ? queueSize() : 20;
+    for (long long i = front; i < front + print_limit; i++)
+    {
+        printf("%d", Q[i]);
+        if (i < front + print_limit - 1)
+        {
+            printf(", ");
+        }
+    }
+    if (queueSize() > 20)
+    {
+        printf("...");
+    }
+    printf("]\n");
+}
+
+//------------- End of queue functions----------------
+
 int *ComputeTDistanceFromIdentity_lex(int n)
 {
     int *pi = (int *)malloc(n * sizeof(int));
@@ -776,7 +856,7 @@ int *ComputeTDistanceFromIdentity_lex(int n)
     return D;
 }
 
-int *ComputeTDistanceFromIdentity_mod_lex(int n)
+int *ComputeTDistanceFromIdentity_LehmerCode(int n)
 {
     int *pi = (int *)malloc(n * sizeof(int));
     int *pi_inv = (int *)malloc(n * sizeof(int));
@@ -870,14 +950,14 @@ int *ComputeTDistanceFromIdentity_mod_lex(int n)
 
     // char filename[512];
     // snprintf(filename, sizeof(filename),
-    //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
+    //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLehmerCodeRank/distances_n%d.txt", n);
     // save_D_to_file(filename, D, FACT);
     return D;
 }
 
 // ================== Computing PAs =========================
 // Compute distance between two permutations pi and sigma
-int distance_between_2_permutations_mod_lex(int n, int *pi, int *sigma, int *D)
+int distance_between_2_permutations_LehmerCode(int n, int *pi, int *sigma, int *D)
 {
     int pi_inv[MAX_N];
     compute_inverse(pi, pi_inv, n);
@@ -898,7 +978,7 @@ int distance_between_2_permutations_mod_lex(int n, int *pi, int *sigma, int *D)
 }
 
 // Computing T(n,d) PA - an array A of permutation on [1..n] with dt(A) >= d.
-long long T_mod_lex(int n, int d, int *D)
+long long T_LehmerCode(int n, int d, int *D)
 {
     // Create forbidden array to track which permutations are too close to chosen ones
     bool *forbidden = (bool *)calloc(factorial(n), sizeof(bool));
@@ -936,7 +1016,7 @@ long long T_mod_lex(int n, int d, int *D)
                     unrank1(n, (int)j, sigma);
 
                     // Compute distance between pi and sigma
-                    int dist = distance_between_2_permutations_mod_lex(n, pi, sigma, D);
+                    int dist = distance_between_2_permutations_LehmerCode(n, pi, sigma, D);
 
                     // If distance < d, forbid this permutation
                     if (dist < d)

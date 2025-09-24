@@ -30,34 +30,46 @@ int main()
     // Load save distance array
     long long FACT;
     long long size;
-    initialize_identity_permutation(pi, n);
 
-    // // int *distance_array = ComputeTDistanceFromIdentity_mod_lex(n);
-
-    // int *distance_array = load_D_from_file_mod_lex(n, &size);
-
-    // for (int d = 1; d < 8; d++)
-    // {
-    //     long long result = T_mod_lex(n, d, distance_array);
-    //     printf("T(%d,%d) = %lld\n", n, d, result);
-    // }
-
-    // int *distance_array = ComputeTDistanceFromIdentity_lex(n);
-
-    int *distance_array = load_D_from_file_lex(n, &size);
-
-    for (int d = 1; d < 8; d++)
+    int opt = 2;
+    switch (opt)
     {
-        long long result = T_lex(n, d, distance_array);
-        printf("T(%d,%d) = %lld\n", n, d, result);
+    case 1: // Lehmer Code ranking
+    {
+        // int *distance_array = ComputeTDistanceFromIdentity_LehmerCode(n);
+
+        int *distance_array_LehmerCode = load_D_from_file_LehmerCode(n, &size);
+        printf("T(n,d) using Lehmer Code Ranking:\n ");
+        printf("\n");
+        for (int d = 1; d < 8; d++)
+        {
+            long long result = T_LehmerCode(n, d, distance_array_LehmerCode);
+            printf("T(%d,%d) = %lld\n", n, d, result);
+        }
+
+        break;
     }
+    case 2: // Lexigraphical ranking
+    {
+        // int *distance_array = ComputeTDistanceFromIdentity_lex(n);
 
-    clock_t end_time = clock();
-    double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+        int *distance_array_Lex = load_D_from_file_lex(n, &size);
+        printf("T(n,d) using Lexigraphical ranking:");
+        printf("\n");
+        for (int d = 1; d < 8; d++)
+        {
+            long long result = T_lex(n, d, distance_array_Lex);
+            printf("T(%d,%d) = %lld\n", n, d, result);
+        }
 
-    printf("\nTotal program execution time: %.3f seconds\n", total_program_time);
+        clock_t end_time = clock();
+        double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
 
-    return 0;
+        printf("\nTotal program execution time: %.3f seconds\n", total_program_time);
+        break;
+        return 0;
+    }
+    }
 }
 
 // int main()
