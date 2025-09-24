@@ -222,11 +222,11 @@ int computeMaxLen_v2(int pi[], int n)
 
 // ================= Read distances array from files ============
 // Load D array from the fixed directory path
-int *load_D_from_file_LehmerCode(int n, long long *size_out)
+int *load_D_from_file_LehmerAscendingRadix(int n, long long *size_out)
 {
     char filepath[512];
     snprintf(filepath, sizeof(filepath),
-             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLehmerCodeRank/distances_n%d.txt", n);
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLehmerAscendingRadixRank/distances_n%d.txt", n);
 
     FILE *f = fopen(filepath, "r");
     if (!f)
@@ -856,7 +856,7 @@ int *ComputeTDistanceFromIdentity_lex(int n)
     return D;
 }
 
-int *ComputeTDistanceFromIdentity_LehmerCode(int n)
+int *ComputeTDistanceFromIdentity_LehmerAscendingRadix(int n)
 {
     int *pi = (int *)malloc(n * sizeof(int));
     int *pi_inv = (int *)malloc(n * sizeof(int));
@@ -950,14 +950,14 @@ int *ComputeTDistanceFromIdentity_LehmerCode(int n)
 
     // char filename[512];
     // snprintf(filename, sizeof(filename),
-    //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLehmerCodeRank/distances_n%d.txt", n);
+    //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLehmerAscendingRadixRank/distances_n%d.txt", n);
     // save_D_to_file(filename, D, FACT);
     return D;
 }
 
 // ================== Computing PAs =========================
 // Compute distance between two permutations pi and sigma
-int distance_between_2_permutations_LehmerCode(int n, int *pi, int *sigma, int *D)
+int distance_between_2_permutations_LehmerAscendingRadix(int n, int *pi, int *sigma, int *D)
 {
     int pi_inv[MAX_N];
     compute_inverse(pi, pi_inv, n);
@@ -978,7 +978,7 @@ int distance_between_2_permutations_LehmerCode(int n, int *pi, int *sigma, int *
 }
 
 // Computing T(n,d) PA - an array A of permutation on [1..n] with dt(A) >= d.
-long long T_LehmerCode(int n, int d, int *D)
+long long T_LehmerAscendingRadix(int n, int d, int *D)
 {
     // Create forbidden array to track which permutations are too close to chosen ones
     bool *forbidden = (bool *)calloc(factorial(n), sizeof(bool));
@@ -1016,7 +1016,7 @@ long long T_LehmerCode(int n, int d, int *D)
                     unrank1(n, (int)j, sigma);
 
                     // Compute distance between pi and sigma
-                    int dist = distance_between_2_permutations_LehmerCode(n, pi, sigma, D);
+                    int dist = distance_between_2_permutations_LehmerAscendingRadix(n, pi, sigma, D);
 
                     // If distance < d, forbid this permutation
                     if (dist < d)

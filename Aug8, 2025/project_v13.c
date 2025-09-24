@@ -31,19 +31,19 @@ int main()
     long long FACT;
     long long size;
 
-    int opt = 2;
+    int opt = 1;
     switch (opt)
     {
-    case 1: // Lehmer Code ranking
+    case 1: // Lehmer Ascending Radix ranking
     {
-        // int *distance_array = ComputeTDistanceFromIdentity_LehmerCode(n);
+        // int *distance_array_LehmerAscendingRadix = ComputeTDistanceFromIdentity_LehmerAscendingRadix(n);
 
-        int *distance_array_LehmerCode = load_D_from_file_LehmerCode(n, &size);
-        printf("T(n,d) using Lehmer Code Ranking:\n ");
+        int *distance_array_LehmerAscendingRadix = load_D_from_file_LehmerAscendingRadix(n, &size);
+        printf("T(n,d) using Lehmer Ascending Radix Ranking:");
         printf("\n");
         for (int d = 1; d < 8; d++)
         {
-            long long result = T_LehmerCode(n, d, distance_array_LehmerCode);
+            long long result = T_LehmerAscendingRadix(n, d, distance_array_LehmerAscendingRadix);
             printf("T(%d,%d) = %lld\n", n, d, result);
         }
 
@@ -51,7 +51,7 @@ int main()
     }
     case 2: // Lexigraphical ranking
     {
-        // int *distance_array = ComputeTDistanceFromIdentity_lex(n);
+        // int *distance_array_Lex = ComputeTDistanceFromIdentity_lex(n);
 
         int *distance_array_Lex = load_D_from_file_lex(n, &size);
         printf("T(n,d) using Lexigraphical ranking:");

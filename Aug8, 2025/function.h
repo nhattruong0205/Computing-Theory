@@ -19,7 +19,7 @@ int computeMaxLen(int pi[], int n);    // Using longest_increasing_consecutive_v
 int computeMaxLen_v2(int pi[], int n); // Using longest_increasing_subsequence
 
 // ================= Read distances array from files ============
-int *load_D_from_file_LehmerCode(int n, long long *size_out);
+int *load_D_from_file_LehmerAscendingRadix(int n, long long *size_out);
 int *load_D_from_file_lex(int n, long long *size_out);
 
 // ----------- Ranking function ----------------
@@ -65,14 +65,14 @@ void printQueue();
 
 //================== Compute distance array ====================
 int *ComputeTDistanceFromIdentity_lex(int n);
-int *ComputeTDistanceFromIdentity_LehmerCode(int n);
+int *ComputeTDistanceFromIdentity_LehmerAscendingRadix(int n);
 
 // ================== Computing PAs =========================
 // Computing T(n,d) PA - an array A of permutation on [1..n] with dt(A) >= d.
 // Using Lehmer Code ranking
-int distance_between_2_permutations_LehmerCode(int n, int *pi, int *sigma, int *D);
+int distance_between_2_permutations_LehmerAscendingRadix(int n, int *pi, int *sigma, int *D);
 
-long long T_LehmerCode(int n, int d, int *D); // Using Lehmer Code ranking
+long long T_LehmerAscendingRadix(int n, int d, int *D); // Using Lehmer Code ranking
 
 // Using  lex ranking
 int distance_between_2_permutations_lex(int n, int *pi, int *sigma, int *D);
