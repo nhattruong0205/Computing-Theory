@@ -226,7 +226,7 @@ int *load_D_from_file_mod_lex(int n, long long *size_out)
 {
     char filepath[512];
     snprintf(filepath, sizeof(filepath),
-             "/Users/nhattruong/Documents/Computing Theory/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
 
     FILE *f = fopen(filepath, "r");
     if (!f)
@@ -274,7 +274,7 @@ int *load_D_from_file_lex(int n, long long *size_out)
 {
     char filepath[512];
     snprintf(filepath, sizeof(filepath),
-             "/Users/nhattruong/Documents/Computing Theory/ComputingTheoryDArraydistanceStdRank/distances_n%d.txt", n);
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceStdRank/distances_n%d.txt", n);
 
     FILE *f = fopen(filepath, "r");
     if (!f)
