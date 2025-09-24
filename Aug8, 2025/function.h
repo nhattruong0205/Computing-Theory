@@ -21,6 +21,7 @@ int computeMaxLen_v2(int pi[], int n); // Using longest_increasing_subsequence
 // ================= Read distances array from files ============
 int *load_D_from_file_LehmerAscendingRadix(int n, long long *size_out);
 int *load_D_from_file_lex(int n, long long *size_out);
+int *load_D_from_file_Lehmer(int n, long long *size_out);
 
 // ----------- Ranking function ----------------
 void swap(int *a, int *b);
@@ -29,6 +30,9 @@ void unrank_lex(int n, int r, int pi[]);
 int rank1(int n, int pi[], int pi_inv[]);
 int rank_safe(int n, const int src[], int *inv_buf);
 void unrank1(int n, int r, int pi[]);
+int rank2(int n, int pi[], int pi_inv[]);
+int rank2_safe(int n, const int src[], int *inv_buf);
+void unrank2(int n, int r, int pi[]);
 
 // ============== Computing cycles functions ==========
 int *creatingBreakpointGraph(int arr[], int size);
@@ -63,21 +67,31 @@ int dequeue();
 long long queueSize();
 void printQueue();
 
+// =============== Dealing with memory ========================
+bool allocate_memory(int n);
+void free_memory();
+
+// =============== Saving files function ======================
+void save_D_to_file(const char *filename, int *D, long long size);
+
 //================== Compute distance array ====================
 int *ComputeTDistanceFromIdentity_lex(int n);
 int *ComputeTDistanceFromIdentity_LehmerAscendingRadix(int n);
+int *ComputeTDistanceFromIdentity_Lehmer(int n);
 
 // ================== Computing PAs =========================
 // Computing T(n,d) PA - an array A of permutation on [1..n] with dt(A) >= d.
-// Using Lehmer Code ranking
+// Using Lehmer Ascending Radix ranking
 int distance_between_2_permutations_LehmerAscendingRadix(int n, int *pi, int *sigma, int *D);
-
-long long T_LehmerAscendingRadix(int n, int d, int *D); // Using Lehmer Code ranking
+long long T_LehmerAscendingRadix(int n, int d, int *D); // Using Lehmer Ascending Radix ranking
 
 // Using  lex ranking
 int distance_between_2_permutations_lex(int n, int *pi, int *sigma, int *D);
-
 long long T_lex(int n, int d, int *D); // Using lexigraphical ranking
+
+// Using Lehmer ranking
+int distance_between_2_permutations_Lehmer(int n, int *pi, int *sigma, int *D);
+long long T_Lehmer(int n, int d, int *D); // Using Lehmer ranking
 
 // ============== Print bad permutation ==================
 // Max len based on max consecutive values

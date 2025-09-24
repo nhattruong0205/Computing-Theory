@@ -9,8 +9,7 @@
 
 // Global variables - now using pointers instead of fixed arrays
 int n;
-int *D; // Dynamic array for distances
-
+int *distance_array_LehmerAscendingRadix, *distance_array_Lehmer, distance_array_Lex;
 int main()
 {
     clock_t start_time = clock();
@@ -31,7 +30,23 @@ int main()
     long long FACT;
     long long size;
 
-    int opt = 1;
+    // Allocate memory
+    if (!allocate_memory(n))
+    {
+        printf("Memory allocation failed. Exiting.\n");
+        return 1;
+    }
+
+    int *pi = (int *)malloc(n * sizeof(int));
+    if (!pi)
+    {
+        printf("Failed to allocate pi array\n");
+        free_memory();
+        return 1;
+    }
+    initialize_identity_permutation(pi, n);
+
+    int opt = 3;
     switch (opt)
     {
     case 1: // Lehmer Ascending Radix ranking
@@ -67,9 +82,22 @@ int main()
 
         printf("\nTotal program execution time: %.3f seconds\n", total_program_time);
         break;
-        return 0;
+    }
+    case 3: // Lehmer Ranking
+    {
+        // int *distance_array_Lehmer = ComputeTDistanceFromIdentity_Lehmer(n);
+        int *distance_array_Lehmer = load_D_from_file_Lehmer(n, &size);
+        printf("T(n,d) using Lehmer ranking:");
+        printf("\n");
+        for (int d = 4; d < 8; d++)
+        {
+            long long result = T_Lehmer(n, d, distance_array_Lehmer);
+            printf("T(%d,%d) = %lld\n", n, d, result);
+        }
+        break;
     }
     }
+    return 0;
 }
 
 // int main()
