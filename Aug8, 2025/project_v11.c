@@ -586,7 +586,7 @@ int distance_between_2_permutations(int n, int *pi, int *sigma, int *D)
 
 // Function to compute T(n,d) using greedy algorithm
 // T(n,d) = maximum size of a code where all pairs have distance >= d
-long long T(int n, int d)
+long long T(int n, int d, int *D)
 {
     // Create forbidden array to track which permutations are too close to chosen ones
     bool *forbidden = (bool *)calloc(FACT, sizeof(bool));
@@ -786,7 +786,7 @@ int main()
     // Load save distance array
     long long size;
     int *distance_array = load_D_from_file(n, &size);
-
+    FACT = factorial(n);
     // int perm1[MAX_N] = {2, 4, 1, 3};
     // int perm2[MAX_N] = {2, 3, 1, 4};
     // int dis = distance_between_2_permutations(n, perm1, perm2, distance_array);
@@ -806,9 +806,9 @@ int main()
     // long long result = T(n, d);
     // printf("T(%d,%d) = %lld\n", n, d, result);
 
-    for (int d = 4; d < 8; d++)
+    for (int d = 2; d < 8; d++)
     {
-        long long result = T(n, d);
+        long long result = T(n, d, distance_array);
         printf("T(%d,%d) = %lld\n", n, d, result);
     }
 

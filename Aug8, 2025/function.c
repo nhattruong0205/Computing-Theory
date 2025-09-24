@@ -222,11 +222,59 @@ int computeMaxLen_v2(int pi[], int n)
 
 // ================= Read distances array from files ============
 // Load D array from the fixed directory path
-int *load_D_from_file(int n, long long *size_out)
+int *load_D_from_file_mod_lex(int n, long long *size_out)
 {
     char filepath[512];
     snprintf(filepath, sizeof(filepath),
-             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
+             "/Users/nhattruong/Documents/Computing Theory/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
+
+    FILE *f = fopen(filepath, "r");
+    if (!f)
+    {
+        perror("Failed to open file for reading");
+        return NULL;
+    }
+
+    // Count number of lines to determine size
+    long long count = 0;
+    int temp;
+    while (fscanf(f, "%d", &temp) == 1)
+    {
+        count++;
+    }
+    rewind(f); // go back to beginning
+
+    int *D_loaded = (int *)malloc(count * sizeof(int));
+    if (!D_loaded)
+    {
+        fclose(f);
+        perror("Memory allocation failed");
+        return NULL;
+    }
+
+    for (long long i = 0; i < count; i++)
+    {
+        if (fscanf(f, "%d", &D_loaded[i]) != 1)
+        {
+            printf("Error reading element %lld\n", i);
+            free(D_loaded);
+            fclose(f);
+            return NULL;
+        }
+    }
+
+    fclose(f);
+    *size_out = count;
+    printf("Loaded D array from %s (%lld elements)\n", filepath, count);
+    return D_loaded;
+}
+
+// Load D array from the fixed directory path
+int *load_D_from_file_lex(int n, long long *size_out)
+{
+    char filepath[512];
+    snprintf(filepath, sizeof(filepath),
+             "/Users/nhattruong/Documents/Computing Theory/ComputingTheoryDArraydistanceStdRank/distances_n%d.txt", n);
 
     FILE *f = fopen(filepath, "r");
     if (!f)
@@ -276,6 +324,54 @@ void swap(int *a, int *b)
     int temp = *a;
     *a = *b;
     *b = temp;
+}
+
+// Original recursive rank lex function: computes the lexicographic rank of a permutation
+int rank_lex(int pi[], int n)
+{
+    int rank = 0;
+    int fact = 1;
+    for (int i = 2; i <= n; i++)
+        fact *= i; // fact = n!
+
+    bool used[MAX_N] = {false};
+
+    for (int i = 0; i < n; i++)
+    {
+        fact /= (n - i); // fact = (n-i-1)!
+        int smaller = 0;
+        for (int j = 0; j < pi[i]; j++)
+        {
+            if (!used[j])
+                smaller++;
+        }
+        rank += smaller * fact;
+        used[pi[i]] = true;
+    }
+    return rank;
+}
+
+// Build the permutation corresponding to rank r in lexicographic order
+void unrank_lex(int n, int r, int pi[])
+{
+    int fact = 1;
+    for (int i = 2; i <= n; i++)
+        fact *= i;
+
+    int elems[MAX_N];
+    for (int i = 0; i < n; i++)
+        elems[i] = i;
+
+    for (int i = 0; i < n; i++)
+    {
+        fact /= (n - i);
+        int idx = r / fact;
+        r = r % fact;
+        pi[i] = elems[idx];
+        // remove elems[idx]
+        for (int j = idx; j < n - i - 1; j++)
+            elems[j] = elems[j + 1];
+    }
 }
 
 // Original recursive rank1 function: computes the lexicographic rank of a permutation
@@ -590,6 +686,157 @@ BestNeighborMetrics findBestNeighborMetrics(int *perm, int n)
     free(deg);
 
     return result;
+}
+
+// ================== Computing PAs =========================
+// Compute distance between two permutations pi and sigma
+int distance_between_2_permutations_mod_lex(int n, int *pi, int *sigma, int *D)
+{
+    int pi_inv[MAX_N];
+    compute_inverse(pi, pi_inv, n);
+
+    // Compute composition: pi_inv ∘ sigma
+    int composed[MAX_N];
+    for (int i = 0; i < n; i++)
+    {
+        composed[i] = pi_inv[sigma[i]];
+    }
+
+    // Rank the composed permutation
+    int composed_inv[MAX_N];
+    compute_inverse(composed, composed_inv, n);
+    int r = rank_safe(n, composed, composed_inv);
+
+    return D[r]; // lookup precomputed distance
+}
+
+// Computing T(n,d) PA - an array A of permutation on [1..n] with dt(A) >= d.
+long long T_mod_lex(int n, int d, int *D)
+{
+    // Create forbidden array to track which permutations are too close to chosen ones
+    bool *forbidden = (bool *)calloc(factorial(n), sizeof(bool));
+    if (!forbidden)
+    {
+        printf("Failed to allocate forbidden array\n");
+        return -1;
+    }
+
+    long long code_size = 0;
+    int pi[MAX_N], sigma[MAX_N];
+    int pi_inv[MAX_N], sigma_inv[MAX_N];
+
+    // Greedy algorithm: keep selecting permutations until none remain
+    for (long long i = 0; i < factorial(n); i++)
+    {
+        if (!forbidden[i])
+        {
+            // Select this permutation as a codeword
+            code_size++;
+
+            // Convert rank i to permutation pi
+            initialize_identity_permutation(pi, n);
+            unrank1(n, (int)i, pi);
+
+            // print_array(pi, n);
+
+            // Forbid all permutations within distance d-1 of pi
+            for (long long j = 0; j < factorial(n); j++)
+            {
+                if (!forbidden[j])
+                {
+                    // Convert rank j to permutation sigma
+                    initialize_identity_permutation(sigma, n);
+                    unrank1(n, (int)j, sigma);
+
+                    // Compute distance between pi and sigma
+                    int dist = distance_between_2_permutations_mod_lex(n, pi, sigma, D);
+
+                    // If distance < d, forbid this permutation
+                    if (dist < d)
+                    {
+                        forbidden[j] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    free(forbidden);
+    return code_size;
+}
+
+// Compute distance between two permutations pi and sigma
+int distance_between_2_permutations_lex(int n, int *pi, int *sigma, int *D)
+{
+    // Compute composition: pi⁻¹ ∘ sigma
+    int pi_inv[MAX_N];
+    for (int i = 0; i < n; i++)
+    {
+        pi_inv[pi[i]] = i; // inverse of pi
+    }
+
+    int composed[MAX_N];
+    for (int i = 0; i < n; i++)
+    {
+        composed[i] = pi_inv[sigma[i]];
+    }
+
+    // Rank the composed permutation in lex order
+    int r = rank_lex(composed, n);
+
+    return D[r]; // lookup precomputed distance
+}
+
+// Function to compute T(n,d) using greedy algorithm
+// T(n,d) = maximum size of a code where all pairs have distance >= d
+long long T_lex(int n, int d, int *D)
+{
+    // Create forbidden array to track which permutations are too close to chosen ones
+    bool *forbidden = (bool *)calloc(factorial(n), sizeof(bool));
+    if (!forbidden)
+    {
+        printf("Failed to allocate forbidden array\n");
+        return -1;
+    }
+
+    long long code_size = 0;
+    int pi[MAX_N], sigma[MAX_N];
+
+    // Greedy algorithm: keep selecting permutations until none remain
+    for (long long i = 0; i < factorial(n); i++)
+    {
+        if (!forbidden[i])
+        {
+            // Select this permutation as a codeword
+            code_size++;
+
+            // Convert rank i to permutation pi
+            unrank_lex(n, (int)i, pi);
+
+            // print_array(pi, n);
+
+            // Forbid all permutations within distance < d of pi
+            for (long long j = 0; j < factorial(n); j++)
+            {
+                if (!forbidden[j])
+                {
+                    // Convert rank j to permutation sigma
+                    unrank_lex(n, (int)j, sigma);
+
+                    // Compute distance between pi and sigma
+                    int dist = distance_between_2_permutations_lex(n, pi, sigma, D);
+
+                    if (dist < d)
+                    {
+                        forbidden[j] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    free(forbidden);
+    return code_size;
 }
 
 // ============== Print bad permutation ==================
