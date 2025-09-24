@@ -21,7 +21,6 @@ int computeMaxLen_v2(int pi[], int n); // Using longest_increasing_subsequence
 int *load_D_from_file_mod_lex(int n, long long *size_out);
 int *load_D_from_file_lex(int n, long long *size_out);
 
-
 // ----------- Ranking function ----------------
 void swap(int *a, int *b);
 int rank_lex(int pi[], int n);
@@ -53,6 +52,10 @@ typedef struct
 } BestNeighborMetrics;
 
 BestNeighborMetrics findBestNeighborMetrics(int *perm, int n);
+
+//================== Compute distance array ====================
+int *ComputeTDistanceFromIdentity_lex(int n);
+int *ComputeTDistanceFromIdentity_mod_lex(int n);
 
 // ================== Computing PAs =========================
 // Computing T(n,d) PA - an array A of permutation on [1..n] with dt(A) >= d.

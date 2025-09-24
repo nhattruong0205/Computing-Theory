@@ -426,6 +426,7 @@ void save_D_to_file(const char *filename, int *D, long long size)
     printf("Saved D array to %s (%lld elements)\n", filename, size);
 }
 
+//================== Compute distance array ====================
 int *ComputeTDistanceFromIdentity(int n)
 {
     int *pi = (int *)malloc(n * sizeof(int));

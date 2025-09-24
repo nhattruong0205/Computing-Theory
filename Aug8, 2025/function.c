@@ -688,6 +688,193 @@ BestNeighborMetrics findBestNeighborMetrics(int *perm, int n)
     return result;
 }
 
+int *ComputeTDistanceFromIdentity_lex(int n)
+{
+    int *pi = (int *)malloc(n * sizeof(int));
+    if (!pi)
+    {
+        printf("Failed to allocate memory for pi\n");
+        return NULL;
+    }
+
+    // Identity permutation
+    initialize_identity_permutation(pi, n);
+
+    int pid = rank_lex(pi, n); // rank of identity
+    D[pid] = 0;
+    visited[pid] = true;
+
+    initQueue();
+    enqueue(pid);
+
+    long long processed = 0;
+    int result[MAX_N];
+    while (!isEmpty())
+    {
+        processed++;
+        if (processed % 100000 == 0)
+        {
+            printf("Processed %lld permutations, queue size: %lld\n", processed, queueSize());
+        }
+
+        int current_rank = dequeue();
+
+        // Convert rank back to permutation
+        unrank_lex(n, current_rank, result);
+
+        int tmp[MAX_N];
+        for (int i = 0; i < n; ++i)
+            for (int j = i + 1; j < n; ++j)
+                for (int k = j; k < n; ++k)
+                {
+                    /* Build translocated permutation */
+                    int idx = 0;
+
+                    // 1. Prefix: [0..i-1]
+                    for (int x = 0; x < i; ++x)
+                        tmp[idx++] = result[x];
+
+                    // 2. Block: [j..k]
+                    for (int x = j; x <= k; ++x)
+                        tmp[idx++] = result[x];
+
+                    // 3. Middle: [i..j-1]
+                    for (int x = i; x < j; ++x)
+                        tmp[idx++] = result[x];
+
+                    // 4. Suffix: [k+1..n-1]
+                    for (int x = k + 1; x < n; ++x)
+                        tmp[idx++] = result[x];
+
+                    // Get rank of translocated permutation
+                    int rank_tmp = rank_lex(tmp, n);
+
+                    if (rank_tmp < 0 || rank_tmp >= FACT)
+                    {
+                        printf("Error: Invalid rank %d (FACT=%lld)\n", rank_tmp, FACT);
+                        continue;
+                    }
+
+                    // If not visited yet, update distance and enqueue
+                    if (!visited[rank_tmp])
+                    {
+                        visited[rank_tmp] = true;
+                        D[rank_tmp] = D[current_rank] + 1;
+                        enqueue(rank_tmp);
+                    }
+                }
+    }
+
+    printf("Total processed: %lld permutations\n", processed);
+
+    char filename[512];
+    // snprintf(filename, sizeof(filename),
+    //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceStdRank/distances_n%d.txt", n);
+    // save_D_to_file(filename, D, FACT);
+
+    free(pi);
+    return D;
+}
+
+int *ComputeTDistanceFromIdentity_mod_lex(int n)
+{
+    int *pi = (int *)malloc(n * sizeof(int));
+    int *pi_inv = (int *)malloc(n * sizeof(int));
+
+    if (!pi || !pi_inv)
+    {
+        printf("Failed to allocate memory for pi or pi_inv\n");
+        if (pi)
+            free(pi);
+        if (pi_inv)
+            free(pi_inv);
+        return NULL;
+    }
+
+    initialize_identity_permutation(pi, n);
+    compute_inverse(pi, pi_inv, n);
+
+    int pid = rank_safe(n, pi, pi_inv);
+    D[pid] = 0;
+    visited[pid] = true;
+
+    initQueue();
+    enqueue(pid);
+
+    long long processed = 0;
+    int result[MAX_N];
+    while (!isEmpty())
+    {
+        processed++;
+        if (processed % 100000 == 0)
+        {
+            printf("Processed %lld permutations, queue size: %lld\n", processed, queueSize());
+        }
+
+        int current_rank = dequeue();
+        // Convert rank back to permutation
+        initialize_identity_permutation(result, n);
+        unrank1(n, current_rank, result);
+
+        int tmp[MAX_N];
+        int tmp_inv[MAX_N];
+        for (int i = 0; i < n; ++i)
+            for (int j = i + 1; j < n; ++j)
+                for (int k = j; k < n; ++k)
+                {
+                    /* Build translocated permutation */
+                    int idx = 0;
+
+                    /* 1. Prefix: [0..i-1] */
+                    for (int x = 0; x < i; ++x)
+                        tmp[idx++] = result[x];
+
+                    /* 2. Block: [j..k] */
+                    for (int x = j; x <= k; ++x)
+                        tmp[idx++] = result[x];
+
+                    /* 3. Middle: [i..j-1] */
+                    for (int x = i; x < j; ++x)
+                        tmp[idx++] = result[x];
+
+                    /* 4. Suffix: [k+1..n-1] */
+                    for (int x = k + 1; x < n; ++x)
+                        tmp[idx++] = result[x];
+
+                    // Get rank of translocated permutation
+                    compute_inverse(tmp, tmp_inv, n);
+                    int rank_tmp = rank_safe(n, tmp, tmp_inv);
+
+                    if (rank_tmp < 0 || rank_tmp >= FACT)
+                    {
+                        printf("Error: Invalid rank %d (FACT=%lld)\n", rank_tmp, FACT);
+                        continue;
+                    }
+
+                    // Check if the permutation has already been visited
+                    if (!visited[rank_tmp])
+                    {
+                        visited[rank_tmp] = true;
+                        if (D[rank_tmp] > D[current_rank] + 1)
+                        {
+                            D[rank_tmp] = D[current_rank] + 1;
+                            enqueue(rank_tmp);
+                        }
+                    }
+                }
+    }
+
+    printf("Total processed: %lld permutations\n", processed);
+    free(pi);
+    free(pi_inv);
+
+    // char filename[512];
+    // snprintf(filename, sizeof(filename),
+    //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceModifiedRank/distances_n%d.txt", n);
+    // save_D_to_file(filename, D, FACT);
+    return D;
+}
+
 // ================== Computing PAs =========================
 // Compute distance between two permutations pi and sigma
 int distance_between_2_permutations_mod_lex(int n, int *pi, int *sigma, int *D)

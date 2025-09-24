@@ -30,6 +30,10 @@ int main()
     // Load save distance array
     long long FACT;
     long long size;
+    initialize_identity_permutation(pi, n);
+
+    // // int *distance_array = ComputeTDistanceFromIdentity_mod_lex(n);
+
     // int *distance_array = load_D_from_file_mod_lex(n, &size);
 
     // for (int d = 1; d < 8; d++)
@@ -37,6 +41,8 @@ int main()
     //     long long result = T_mod_lex(n, d, distance_array);
     //     printf("T(%d,%d) = %lld\n", n, d, result);
     // }
+
+    // int *distance_array = ComputeTDistanceFromIdentity_lex(n);
 
     int *distance_array = load_D_from_file_lex(n, &size);
 
