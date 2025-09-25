@@ -46,19 +46,20 @@ int main()
     }
     initialize_identity_permutation(pi, n);
 
-    int opt = 3;
+    int opt = 1;
     switch (opt)
     {
     case 1: // Lehmer Ascending Radix ranking
     {
-        // int *distance_array_LehmerAscendingRadix = ComputeTDistanceFromIdentity_LehmerAscendingRadix(n);
+        const char *rank_name = "LehmerAscendingRadix";
 
-        int *distance_array_LehmerAscendingRadix = load_D_from_file_LehmerAscendingRadix(n, &size);
+        // int *distance_array_LehmerAscendingRadix = ComputeTDistanceFromIdentity(n, rank_name);
+        int *distance_array_LehmerAscendingRadix = load_D_from_file(n, &size, rank_name);
         printf("T(n,d) using Lehmer Ascending Radix Ranking:");
         printf("\n");
         for (int d = 1; d < 8; d++)
         {
-            long long result = T_LehmerAscendingRadix(n, d, distance_array_LehmerAscendingRadix);
+            long long result = T_n_d(n, d, distance_array_LehmerAscendingRadix, rank_name);
             printf("T(%d,%d) = %lld\n", n, d, result);
         }
 
@@ -66,14 +67,16 @@ int main()
     }
     case 2: // Lexigraphical ranking
     {
-        // int *distance_array_Lex = ComputeTDistanceFromIdentity_lex(n);
+        const char *rank_name = "Lex";
 
-        int *distance_array_Lex = load_D_from_file_lex(n, &size);
+        // int *distance_array_Lex = ComputeTDistanceFromIdentity_lex(n, rank_name);
+
+        int *distance_array_Lex = load_D_from_file(n, &size, rank_name);
         printf("T(n,d) using Lexigraphical ranking:");
         printf("\n");
         for (int d = 1; d < 8; d++)
         {
-            long long result = T_lex(n, d, distance_array_Lex);
+            long long result = T_n_d(n, d, distance_array_Lex, rank_name);
             printf("T(%d,%d) = %lld\n", n, d, result);
         }
 
@@ -85,15 +88,21 @@ int main()
     }
     case 3: // Lehmer Ranking
     {
-        // int *distance_array_Lehmer = ComputeTDistanceFromIdentity_Lehmer(n);
-        int *distance_array_Lehmer = load_D_from_file_Lehmer(n, &size);
+        const char *rank_name = "Lehmer";
+
+        // int *distance_array_Lehmer = ComputeTDistanceFromIdentity_Lehmer(n, rank_name);
+        int *distance_array_Lehmer = load_D_from_file(n, &size, rank_name);
         printf("T(n,d) using Lehmer ranking:");
         printf("\n");
-        for (int d = 4; d < 8; d++)
+        for (int d = 2; d < 8; d++)
         {
-            long long result = T_Lehmer(n, d, distance_array_Lehmer);
+            long long result = T_n_d(n, d, distance_array_Lehmer, rank_name);
             printf("T(%d,%d) = %lld\n", n, d, result);
         }
+        break;
+    }
+    case 4:
+    {
         break;
     }
     }

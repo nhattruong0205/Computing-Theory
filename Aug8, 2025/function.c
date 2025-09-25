@@ -222,107 +222,11 @@ int computeMaxLen_v2(int pi[], int n)
 
 // ================= Read distances array from files ============
 // Load D array from the fixed directory path
-int *load_D_from_file_LehmerAscendingRadix(int n, long long *size_out)
+int *load_D_from_file(int n, long long *size_out, const char *rank_name)
 {
     char filepath[512];
     snprintf(filepath, sizeof(filepath),
-             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLehmerAscendingRadixRank/distances_n%d.txt", n);
-
-    FILE *f = fopen(filepath, "r");
-    if (!f)
-    {
-        perror("Failed to open file for reading");
-        return NULL;
-    }
-
-    // Count number of lines to determine size
-    long long count = 0;
-    int temp;
-    while (fscanf(f, "%d", &temp) == 1)
-    {
-        count++;
-    }
-    rewind(f); // go back to beginning
-
-    int *D_loaded = (int *)malloc(count * sizeof(int));
-    if (!D_loaded)
-    {
-        fclose(f);
-        perror("Memory allocation failed");
-        return NULL;
-    }
-
-    for (long long i = 0; i < count; i++)
-    {
-        if (fscanf(f, "%d", &D_loaded[i]) != 1)
-        {
-            printf("Error reading element %lld\n", i);
-            free(D_loaded);
-            fclose(f);
-            return NULL;
-        }
-    }
-
-    fclose(f);
-    *size_out = count;
-    // printf("Loaded D array from %s (%lld elements)\n", filepath, count);
-    return D_loaded;
-}
-
-// Load D array from the fixed directory path
-int *load_D_from_file_lex(int n, long long *size_out)
-{
-    char filepath[512];
-    snprintf(filepath, sizeof(filepath),
-             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceStdRank/distances_n%d.txt", n);
-
-    FILE *f = fopen(filepath, "r");
-    if (!f)
-    {
-        perror("Failed to open file for reading");
-        return NULL;
-    }
-
-    // Count number of lines to determine size
-    long long count = 0;
-    int temp;
-    while (fscanf(f, "%d", &temp) == 1)
-    {
-        count++;
-    }
-    rewind(f); // go back to beginning
-
-    int *D_loaded = (int *)malloc(count * sizeof(int));
-    if (!D_loaded)
-    {
-        fclose(f);
-        perror("Memory allocation failed");
-        return NULL;
-    }
-
-    for (long long i = 0; i < count; i++)
-    {
-        if (fscanf(f, "%d", &D_loaded[i]) != 1)
-        {
-            printf("Error reading element %lld\n", i);
-            free(D_loaded);
-            fclose(f);
-            return NULL;
-        }
-    }
-
-    fclose(f);
-    *size_out = count;
-    // printf("Loaded D array from %s (%lld elements)\n", filepath, count);
-    return D_loaded;
-}
-
-// Load D array from the fixed directory path
-int *load_D_from_file_Lehmer(int n, long long *size_out)
-{
-    char filepath[512];
-    snprintf(filepath, sizeof(filepath),
-             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLehmerRank/distances_n%d.txt", n);
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistance%sRank/distances_n%d.txt", rank_name, n);
 
     FILE *f = fopen(filepath, "r");
     if (!f)
@@ -956,20 +860,30 @@ void save_D_to_file(const char *filename, int *D, long long size)
 }
 
 //================== Compute distance array ====================
-int *ComputeTDistanceFromIdentity_lex(int n)
+int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
 {
     int *pi = (int *)malloc(n * sizeof(int));
+    int *pi_inv = NULL; // only needed for Lehmer ranks
+
     if (!pi)
     {
         printf("Failed to allocate memory for pi\n");
         return NULL;
     }
 
+    compute_inverse(pi, pi_inv, n);
     // Identity permutation
     initialize_identity_permutation(pi, n);
 
-    int pid = rank_lex(pi, n); // rank of identity
-    D[pid] = 0;
+    int pid;
+    if (strcmp(rank_name, "Lex") == 0)
+        pid = rank_lex(pi, n);
+    else if (strcmp(rank_name, "Lehmer") == 0)
+        pid = rank2_safe(n, pi, pi_inv);
+    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+        pid = rank_safe(n, pi, pi_inv);
+    else
+        D[pid] = 0;
     visited[pid] = true;
 
     initQueue();
@@ -988,9 +902,16 @@ int *ComputeTDistanceFromIdentity_lex(int n)
         int current_rank = dequeue();
 
         // Convert rank back to permutation
-        unrank_lex(n, current_rank, result);
+        if (strcmp(rank_name, "Lex") == 0)
+            unrank_lex(n, current_rank, result);
+        else if (strcmp(rank_name, "Lehmer") == 0)
+            unrank2(n, current_rank, result);
+        else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+            unrank1(n, current_rank, result);
 
         int tmp[MAX_N];
+        int tmp_inv[MAX_N];
+
         for (int i = 0; i < n; ++i)
             for (int j = i + 1; j < n; ++j)
                 for (int k = j; k < n; ++k)
@@ -1014,8 +935,16 @@ int *ComputeTDistanceFromIdentity_lex(int n)
                     for (int x = k + 1; x < n; ++x)
                         tmp[idx++] = result[x];
 
+                    compute_inverse(tmp, tmp_inv, n);
                     // Get rank of translocated permutation
-                    int rank_tmp = rank_lex(tmp, n);
+                    int rank_tmp;
+                    // Convert rank back to permutation
+                    if (strcmp(rank_name, "Lex") == 0)
+                        rank_tmp = rank_lex(tmp, n);
+                    else if (strcmp(rank_name, "Lehmer") == 0)
+                        rank_tmp = rank2_safe(n, tmp, tmp_inv);
+                    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+                        rank_tmp = rank_safe(n, tmp, tmp_inv);
 
                     if (rank_tmp < 0 || rank_tmp >= FACT)
                     {
@@ -1037,208 +966,10 @@ int *ComputeTDistanceFromIdentity_lex(int n)
 
     char filename[512];
     // snprintf(filename, sizeof(filename),
-    //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceStdRank/distances_n%d.txt", n);
+    //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistance%sRank/distances_n%d.txt", rank_name, n);
     // save_D_to_file(filename, D, FACT);
 
     free(pi);
-    return D;
-}
-
-int *ComputeTDistanceFromIdentity_LehmerAscendingRadix(int n)
-{
-    int *pi = (int *)malloc(n * sizeof(int));
-    int *pi_inv = (int *)malloc(n * sizeof(int));
-
-    if (!pi || !pi_inv)
-    {
-        printf("Failed to allocate memory for pi or pi_inv\n");
-        if (pi)
-            free(pi);
-        if (pi_inv)
-            free(pi_inv);
-        return NULL;
-    }
-
-    initialize_identity_permutation(pi, n);
-    compute_inverse(pi, pi_inv, n);
-
-    int pid = rank_safe(n, pi, pi_inv);
-    D[pid] = 0;
-    visited[pid] = true;
-
-    initQueue();
-    enqueue(pid);
-
-    long long processed = 0;
-    int result[MAX_N];
-    while (!isEmpty())
-    {
-        processed++;
-        if (processed % 100000 == 0)
-        {
-            printf("Processed %lld permutations, queue size: %lld\n", processed, queueSize());
-        }
-
-        int current_rank = dequeue();
-        // Convert rank back to permutation
-        initialize_identity_permutation(result, n);
-        unrank1(n, current_rank, result);
-
-        int tmp[MAX_N];
-        int tmp_inv[MAX_N];
-        for (int i = 0; i < n; ++i)
-            for (int j = i + 1; j < n; ++j)
-                for (int k = j; k < n; ++k)
-                {
-                    /* Build translocated permutation */
-                    int idx = 0;
-
-                    /* 1. Prefix: [0..i-1] */
-                    for (int x = 0; x < i; ++x)
-                        tmp[idx++] = result[x];
-
-                    /* 2. Block: [j..k] */
-                    for (int x = j; x <= k; ++x)
-                        tmp[idx++] = result[x];
-
-                    /* 3. Middle: [i..j-1] */
-                    for (int x = i; x < j; ++x)
-                        tmp[idx++] = result[x];
-
-                    /* 4. Suffix: [k+1..n-1] */
-                    for (int x = k + 1; x < n; ++x)
-                        tmp[idx++] = result[x];
-
-                    // Get rank of translocated permutation
-                    compute_inverse(tmp, tmp_inv, n);
-                    int rank_tmp = rank_safe(n, tmp, tmp_inv);
-
-                    if (rank_tmp < 0 || rank_tmp >= FACT)
-                    {
-                        printf("Error: Invalid rank %d (FACT=%lld)\n", rank_tmp, FACT);
-                        continue;
-                    }
-
-                    // Check if the permutation has already been visited
-                    if (!visited[rank_tmp])
-                    {
-                        visited[rank_tmp] = true;
-                        if (D[rank_tmp] > D[current_rank] + 1)
-                        {
-                            D[rank_tmp] = D[current_rank] + 1;
-                            enqueue(rank_tmp);
-                        }
-                    }
-                }
-    }
-
-    printf("Total processed: %lld permutations\n", processed);
-    free(pi);
-    free(pi_inv);
-
-    // char filename[512];
-    // snprintf(filename, sizeof(filename),
-    //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLehmerAscendingRadixRank/distances_n%d.txt", n);
-    // save_D_to_file(filename, D, FACT);
-    return D;
-}
-
-int *ComputeTDistanceFromIdentity_Lehmer(int n)
-{
-    int *pi = (int *)malloc(n * sizeof(int));
-    int *pi_inv = (int *)malloc(n * sizeof(int));
-
-    if (!pi || !pi_inv)
-    {
-        printf("Failed to allocate memory for pi or pi_inv\n");
-        if (pi)
-            free(pi);
-        if (pi_inv)
-            free(pi_inv);
-        return NULL;
-    }
-
-    initialize_identity_permutation(pi, n);
-    compute_inverse(pi, pi_inv, n);
-
-    int pid = rank2_safe(n, pi, pi_inv);
-    D[pid] = 0;
-    visited[pid] = true;
-
-    initQueue();
-    enqueue(pid);
-
-    long long processed = 0;
-    int result[MAX_N];
-    while (!isEmpty())
-    {
-        processed++;
-        if (processed % 100000 == 0)
-        {
-            printf("Processed %lld permutations, queue size: %lld\n", processed, queueSize());
-        }
-
-        int current_rank = dequeue();
-        // Convert rank back to permutation
-        initialize_identity_permutation(result, n);
-        unrank2(n, current_rank, result);
-
-        int tmp[MAX_N];
-        int tmp_inv[MAX_N];
-        for (int i = 0; i < n; ++i)
-            for (int j = i + 1; j < n; ++j)
-                for (int k = j; k < n; ++k)
-                {
-                    /* Build translocated permutation */
-                    int idx = 0;
-
-                    /* 1. Prefix: [0..i-1] */
-                    for (int x = 0; x < i; ++x)
-                        tmp[idx++] = result[x];
-
-                    /* 2. Block: [j..k] */
-                    for (int x = j; x <= k; ++x)
-                        tmp[idx++] = result[x];
-
-                    /* 3. Middle: [i..j-1] */
-                    for (int x = i; x < j; ++x)
-                        tmp[idx++] = result[x];
-
-                    /* 4. Suffix: [k+1..n-1] */
-                    for (int x = k + 1; x < n; ++x)
-                        tmp[idx++] = result[x];
-
-                    // Get rank of translocated permutation
-                    compute_inverse(tmp, tmp_inv, n);
-                    int rank_tmp = rank2_safe(n, tmp, tmp_inv);
-
-                    if (rank_tmp < 0 || rank_tmp >= FACT)
-                    {
-                        printf("Error: Invalid rank %d (FACT=%lld)\n", rank_tmp, FACT);
-                        continue;
-                    }
-
-                    // Check if the permutation has already been visited
-                    if (!visited[rank_tmp])
-                    {
-                        visited[rank_tmp] = true;
-                        if (D[rank_tmp] > D[current_rank] + 1)
-                        {
-                            D[rank_tmp] = D[current_rank] + 1;
-                            enqueue(rank_tmp);
-                        }
-                    }
-                }
-    }
-
-    printf("Total processed: %lld permutations\n", processed);
-    free(pi);
-    free(pi_inv);
-
-    char filename[512];
-    snprintf(filename, sizeof(filename),
-             "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLehmerRank/distances_n%d.txt", n);
-    save_D_to_file(filename, D, FACT);
     return D;
 }
 
@@ -1264,61 +995,6 @@ int distance_between_2_permutations_LehmerAscendingRadix(int n, int *pi, int *si
     return D[r]; // lookup precomputed distance
 }
 
-// Computing T(n,d) PA - an array A of permutation on [1..n] with dt(A) >= d.
-long long T_LehmerAscendingRadix(int n, int d, int *D)
-{
-    // Create forbidden array to track which permutations are too close to chosen ones
-    bool *forbidden = (bool *)calloc(factorial(n), sizeof(bool));
-    if (!forbidden)
-    {
-        printf("Failed to allocate forbidden array\n");
-        return -1;
-    }
-
-    long long code_size = 0;
-    int pi[MAX_N], sigma[MAX_N];
-    int pi_inv[MAX_N], sigma_inv[MAX_N];
-
-    // Greedy algorithm: keep selecting permutations until none remain
-    for (long long i = 0; i < factorial(n); i++)
-    {
-        if (!forbidden[i])
-        {
-            // Select this permutation as a codeword
-            code_size++;
-
-            // Convert rank i to permutation pi
-            initialize_identity_permutation(pi, n);
-            unrank1(n, (int)i, pi);
-
-            // print_array(pi, n);
-
-            // Forbid all permutations within distance d-1 of pi
-            for (long long j = 0; j < factorial(n); j++)
-            {
-                if (!forbidden[j])
-                {
-                    // Convert rank j to permutation sigma
-                    initialize_identity_permutation(sigma, n);
-                    unrank1(n, (int)j, sigma);
-
-                    // Compute distance between pi and sigma
-                    int dist = distance_between_2_permutations_LehmerAscendingRadix(n, pi, sigma, D);
-
-                    // If distance < d, forbid this permutation
-                    if (dist < d)
-                    {
-                        forbidden[j] = true;
-                    }
-                }
-            }
-        }
-    }
-
-    free(forbidden);
-    return code_size;
-}
-
 // Compute distance between two permutations pi and sigma
 int distance_between_2_permutations_lex(int n, int *pi, int *sigma, int *D)
 {
@@ -1339,58 +1015,6 @@ int distance_between_2_permutations_lex(int n, int *pi, int *sigma, int *D)
     int r = rank_lex(composed, n);
 
     return D[r]; // lookup precomputed distance
-}
-
-// Function to compute T(n,d) using greedy algorithm
-// T(n,d) = maximum size of a code where all pairs have distance >= d
-long long T_lex(int n, int d, int *D)
-{
-    // Create forbidden array to track which permutations are too close to chosen ones
-    bool *forbidden = (bool *)calloc(factorial(n), sizeof(bool));
-    if (!forbidden)
-    {
-        printf("Failed to allocate forbidden array\n");
-        return -1;
-    }
-
-    long long code_size = 0;
-    int pi[MAX_N], sigma[MAX_N];
-
-    // Greedy algorithm: keep selecting permutations until none remain
-    for (long long i = 0; i < factorial(n); i++)
-    {
-        if (!forbidden[i])
-        {
-            // Select this permutation as a codeword
-            code_size++;
-
-            // Convert rank i to permutation pi
-            unrank_lex(n, (int)i, pi);
-
-            // print_array(pi, n);
-
-            // Forbid all permutations within distance < d of pi
-            for (long long j = 0; j < factorial(n); j++)
-            {
-                if (!forbidden[j])
-                {
-                    // Convert rank j to permutation sigma
-                    unrank_lex(n, (int)j, sigma);
-
-                    // Compute distance between pi and sigma
-                    int dist = distance_between_2_permutations_lex(n, pi, sigma, D);
-
-                    if (dist < d)
-                    {
-                        forbidden[j] = true;
-                    }
-                }
-            }
-        }
-    }
-
-    free(forbidden);
-    return code_size;
 }
 
 // Compute distance between two permutations pi and sigma
@@ -1415,7 +1039,7 @@ int distance_between_2_permutations_Lehmer(int n, int *pi, int *sigma, int *D)
 }
 
 // Computing T(n,d) PA - an array A of permutation on [1..n] with dt(A) >= d.
-long long T_Lehmer(int n, int d, int *D)
+long long T_n_d(int n, int d, int *D, const char *rank_name)
 {
     // Create forbidden array to track which permutations are too close to chosen ones
     bool *forbidden = (bool *)calloc(factorial(n), sizeof(bool));
@@ -1439,7 +1063,13 @@ long long T_Lehmer(int n, int d, int *D)
 
             // Convert rank i to permutation pi
             initialize_identity_permutation(pi, n);
-            unrank2(n, (int)i, pi);
+
+            if (strcmp(rank_name, "Lex") == 0)
+                unrank_lex(n, (int)i, pi);
+            else if (strcmp(rank_name, "Lehmer") == 0)
+                unrank2(n, (int)i, pi);
+            else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+                unrank1(n, (int)i, pi);
 
             // print_array(pi, n);
 
@@ -1448,12 +1078,26 @@ long long T_Lehmer(int n, int d, int *D)
             {
                 if (!forbidden[j])
                 {
+                    int dist;
                     // Convert rank j to permutation sigma
                     initialize_identity_permutation(sigma, n);
-                    unrank2(n, (int)j, sigma);
 
-                    // Compute distance between pi and sigma
-                    int dist = distance_between_2_permutations_Lehmer(n, pi, sigma, D);
+                    if (strcmp(rank_name, "Lex") == 0)
+                    {
+                        unrank_lex(n, (int)j, sigma);
+                        dist = distance_between_2_permutations_lex(n, pi, sigma, D);
+                    }
+                    else if (strcmp(rank_name, "Lehmer") == 0)
+                    {
+                        unrank2(n, (int)j, pi);
+                        dist = distance_between_2_permutations_Lehmer(n, pi, sigma, D);
+                    }
+                    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+                    {
+                        unrank1(n, (int)j, sigma);
+                        // Compute distance between pi and sigma
+                        dist = distance_between_2_permutations_LehmerAscendingRadix(n, pi, sigma, D);
+                    }
 
                     // If distance < d, forbid this permutation
                     if (dist < d)
