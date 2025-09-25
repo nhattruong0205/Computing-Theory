@@ -46,7 +46,7 @@ int main()
     }
     initialize_identity_permutation(pi, n);
 
-    int opt = 1;
+    int opt = 3;
     switch (opt)
     {
     case 1: // Lehmer Ascending Radix ranking
@@ -105,6 +105,7 @@ int main()
     {
         break;
     }
+        const char *rank_name = "Lehmer";
     }
     return 0;
 }

@@ -269,8 +269,11 @@ int *load_D_from_file(int n, long long *size_out, const char *rank_name)
     return D_loaded;
 }
 
-// -----------------Ranking permutation into index.--------------
-
+// ===================Ranking permutation into index=====================
+// Rank_name
+// === 1. LehmerAscendingRadix ===
+// === 2. Lex ===
+// === 3. Lehmer ===
 void swap(int *a, int *b)
 {
     int temp = *a;
@@ -975,7 +978,7 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
 
 // ================== Computing PAs =========================
 // Compute distance between two permutations pi and sigma
-int distance_between_2_permutations_LehmerAscendingRadix(int n, int *pi, int *sigma, int *D)
+int distance_between_2_permutations(int n, int *pi, int *sigma, int *D, const char *rank_name)
 {
     int pi_inv[MAX_N];
     compute_inverse(pi, pi_inv, n);
@@ -990,50 +993,14 @@ int distance_between_2_permutations_LehmerAscendingRadix(int n, int *pi, int *si
     // Rank the composed permutation
     int composed_inv[MAX_N];
     compute_inverse(composed, composed_inv, n);
-    int r = rank_safe(n, composed, composed_inv);
 
-    return D[r]; // lookup precomputed distance
-}
-
-// Compute distance between two permutations pi and sigma
-int distance_between_2_permutations_lex(int n, int *pi, int *sigma, int *D)
-{
-    // Compute composition: pi⁻¹ ∘ sigma
-    int pi_inv[MAX_N];
-    for (int i = 0; i < n; i++)
-    {
-        pi_inv[pi[i]] = i; // inverse of pi
-    }
-
-    int composed[MAX_N];
-    for (int i = 0; i < n; i++)
-    {
-        composed[i] = pi_inv[sigma[i]];
-    }
-
-    // Rank the composed permutation in lex order
-    int r = rank_lex(composed, n);
-
-    return D[r]; // lookup precomputed distance
-}
-
-// Compute distance between two permutations pi and sigma
-int distance_between_2_permutations_Lehmer(int n, int *pi, int *sigma, int *D)
-{
-    int pi_inv[MAX_N];
-    compute_inverse(pi, pi_inv, n);
-
-    // Compute composition: pi_inv ∘ sigma
-    int composed[MAX_N];
-    for (int i = 0; i < n; i++)
-    {
-        composed[i] = pi_inv[sigma[i]];
-    }
-
-    // Rank the composed permutation
-    int composed_inv[MAX_N];
-    compute_inverse(composed, composed_inv, n);
-    int r = rank2_safe(n, composed, composed_inv);
+    int r;
+    if (strcmp(rank_name, "Lex") == 0)
+        r = rank_lex(composed, n);
+    else if (strcmp(rank_name, "Lehmer") == 0)
+        r = rank2_safe(n, composed, composed_inv);
+    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+        r = rank_safe(n, composed, composed_inv);
 
     return D[r]; // lookup precomputed distance
 }
@@ -1085,18 +1052,18 @@ long long T_n_d(int n, int d, int *D, const char *rank_name)
                     if (strcmp(rank_name, "Lex") == 0)
                     {
                         unrank_lex(n, (int)j, sigma);
-                        dist = distance_between_2_permutations_lex(n, pi, sigma, D);
+                        dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
                     }
                     else if (strcmp(rank_name, "Lehmer") == 0)
                     {
                         unrank2(n, (int)j, pi);
-                        dist = distance_between_2_permutations_Lehmer(n, pi, sigma, D);
+                        dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
                     }
                     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
                     {
                         unrank1(n, (int)j, sigma);
                         // Compute distance between pi and sigma
-                        dist = distance_between_2_permutations_LehmerAscendingRadix(n, pi, sigma, D);
+                        dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
                     }
 
                     // If distance < d, forbid this permutation

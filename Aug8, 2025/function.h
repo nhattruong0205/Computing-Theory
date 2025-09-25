@@ -21,7 +21,11 @@ int computeMaxLen_v2(int pi[], int n); // Using longest_increasing_subsequence
 // ================= Read distances array from files ============
 int *load_D_from_file(int n, long long *size_out, const char *rank_name);
 
-// ----------- Ranking function ----------------
+// ===================Ranking functions=====================
+// Rank_name
+// === 1. LehmerAscendingRadix ===
+// === 2. Lex ===
+// === 3. Lehmer ===
 void swap(int *a, int *b);
 int rank_lex(int pi[], int n);
 void unrank_lex(int n, int r, int pi[]);
@@ -76,12 +80,8 @@ void save_D_to_file(const char *filename, int *D, long long size);
 int *ComputeTDistanceFromIdentity(int n, const char *rank_name);
 
 // ================== Computing PAs =========================
-// Using Lehmer Ascending Radix ranking
-int distance_between_2_permutations_LehmerAscendingRadix(int n, int *pi, int *sigma, int *D);
-// Using  lex ranking
-int distance_between_2_permutations_lex(int n, int *pi, int *sigma, int *D);
-// Using Lehmer ranking
-int distance_between_2_permutations_Lehmer(int n, int *pi, int *sigma, int *D);
+// Computing distance between 2 permutation using different rankings (rank_name)
+int distance_between_2_permutations(int n, int *pi, int *sigma, int *D, const char *rank_name);
 
 // Computing T(n,d) PA - an array A of permutation on [1..n] with dt(A) >= d.
 long long T_n_d(int n, int d, int *D, const char *rank_name); // Using Lehmer Ascending Radix ranking
