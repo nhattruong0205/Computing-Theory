@@ -26,6 +26,8 @@ int *load_D_from_file(int n, long long *size_out, const char *rank_name);
 // === 1. LehmerAscendingRadix ===
 // === 2. Lex ===
 // === 3. Lehmer ===
+
+// === 5.ReverseColexOrder ===
 void swap(int *a, int *b);
 int rank_lex(int pi[], int n);
 void unrank_lex(int n, int r, int pi[]);
@@ -35,6 +37,8 @@ void unrank1(int n, int r, int pi[]);
 int rank2(int n, int pi[], int pi_inv[]);
 int rank2_safe(int n, const int src[], int *inv_buf);
 void unrank2(int n, int r, int pi[]);
+int rankReverseColexOrder(int pi[], int n);
+void unrankRReverseColexOrder(int n, int r, int pi[]);
 
 // ============== Computing cycles functions ==========
 int *creatingBreakpointGraph(int arr[], int size);

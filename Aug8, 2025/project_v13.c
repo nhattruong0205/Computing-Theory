@@ -9,7 +9,6 @@
 
 // Global variables - now using pointers instead of fixed arrays
 int n;
-int *distance_array_LehmerAscendingRadix, *distance_array_Lehmer, distance_array_Lex;
 int main()
 {
     clock_t start_time = clock();
@@ -28,6 +27,7 @@ int main()
 
     // Load save distance array
     long long FACT;
+    FACT = factorial(n);
     long long size;
 
     // Allocate memory
@@ -46,12 +46,16 @@ int main()
     }
     initialize_identity_permutation(pi, n);
 
-    int opt = 3;
+    //========================== OPTION ==============
+    int opt = 2;
+    //========================== OPTION ==============
+    const char *rank_name = NULL;
+
     switch (opt)
     {
     case 1: // Lehmer Ascending Radix ranking
     {
-        const char *rank_name = "LehmerAscendingRadix";
+        rank_name = "LehmerAscendingRadix";
 
         // int *distance_array_LehmerAscendingRadix = ComputeTDistanceFromIdentity(n, rank_name);
         int *distance_array_LehmerAscendingRadix = load_D_from_file(n, &size, rank_name);
@@ -67,30 +71,29 @@ int main()
     }
     case 2: // Lexigraphical ranking
     {
-        const char *rank_name = "Lex";
+        rank_name = "Lex";
+        int *distance_array_Lex = ComputeTDistanceFromIdentity(n, rank_name);
 
-        // int *distance_array_Lex = ComputeTDistanceFromIdentity_lex(n, rank_name);
-
-        int *distance_array_Lex = load_D_from_file(n, &size, rank_name);
+        // int *distance_array_Lex = load_D_from_file(n, &size, rank_name);
         printf("T(n,d) using Lexigraphical ranking:");
-        printf("\n");
-        for (int d = 1; d < 8; d++)
-        {
-            long long result = T_n_d(n, d, distance_array_Lex, rank_name);
-            printf("T(%d,%d) = %lld\n", n, d, result);
-        }
+        //  printf("\n");
+        //  for (int d = 1; d < 8; d++)
+        //  {
+        //      long long result = T_n_d(n, d, distance_array_Lex, rank_name);
+        //      printf("T(%d,%d) = %lld\n", n, d, result);
+        //  }
 
-        clock_t end_time = clock();
-        double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+        // clock_t end_time = clock();
+        // double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
 
-        printf("\nTotal program execution time: %.3f seconds\n", total_program_time);
+        // printf("\nTotal program execution time: %.3f seconds\n", total_program_time);
         break;
     }
     case 3: // Lehmer Ranking
     {
-        const char *rank_name = "Lehmer";
+        rank_name = "Lehmer";
 
-        // int *distance_array_Lehmer = ComputeTDistanceFromIdentity_Lehmer(n, rank_name);
+        // int *distance_array_Lehmer = ComputeTDistanceFromIdentity(n, rank_name);
         int *distance_array_Lehmer = load_D_from_file(n, &size, rank_name);
         printf("T(n,d) using Lehmer ranking:");
         printf("\n");
@@ -101,11 +104,23 @@ int main()
         }
         break;
     }
-    case 4:
+    case 5:
     {
+
+        rank_name = "ReverseColexOrder";
+        int *distance_array_ReverseColexOrder = ComputeTDistanceFromIdentity(n, rank_name);
+        //  int *distance_array_ReverseColexOrder = load_D_from_file(n, &size, rank_name);
+        printf("T(n,d) using Reverse Colex Order ranking:");
+        printf("\n");
+
+        // for (int d = 2; d < 8; ++d)
+        // {
+        //     long long result = T_n_d(n, d, distance_array_ReverseColexOrder, rank_name);
+        //     printf("T(%d,%d) = %lld\n", n, d, result);
+        // }
+
         break;
     }
-        const char *rank_name = "Lehmer";
     }
     return 0;
 }

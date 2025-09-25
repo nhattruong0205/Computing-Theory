@@ -274,6 +274,7 @@ int *load_D_from_file(int n, long long *size_out, const char *rank_name)
 // === 1. LehmerAscendingRadix ===
 // === 2. Lex ===
 // === 3. Lehmer ===
+// === 5. ReverseColexOrder===
 void swap(int *a, int *b)
 {
     int temp = *a;
@@ -384,7 +385,6 @@ int rank2_safe(int n, const int src[], int *inv_buf)
     return rank2(n, tmp, tmp_inv);             // rank1 can now swap freely
 }
 
-// Original recursive unrank1: Builds a permutation from a given rank
 void unrank2(int n, int r, int pi[])
 {
     if (n > 0)
@@ -395,6 +395,60 @@ void unrank2(int n, int r, int pi[])
     }
 }
 
+// Reverse Lehmer
+int rankReverseColexOrder(int pi[], int n)
+{
+    int r = 0;
+    int f = 1;
+    for (int i = 1; i < n; i++)
+    {
+        int c = 0;
+        for (int j = 0; j < i; j++)
+        {
+            if (pi[j] > pi[i])
+                c++;
+        }
+        r += c * f;
+        f *= (i + 1);
+    }
+    return r;
+}
+
+void unrankReverseColexOrder(int n, int r, int pi[])
+{
+    int fact[32];
+    fact[0] = 1;
+    for (int i = 1; i <= n; i++)
+        fact[i] = fact[i - 1] * i;
+
+    if (r < 0 || r >= fact[n])
+    {
+        printf("rank out of range (0..%d)\n", fact[n] - 1);
+        return;
+    }
+
+    int c[32];
+    c[0] = 0;
+    for (int i = 1; i < n; i++)
+        c[i] = (r / fact[i]) % (i + 1);
+
+    int avail[32];
+    for (int i = 0; i < n; i++)
+        avail[i] = i; // ascending
+    int avail_size = n;
+
+    for (int i = n - 1; i >= 0; i--)
+    {
+        // pick (c[i]+1)-th largest from avail
+        int idx = avail_size - (c[i] + 1); // index in ascending array
+        pi[i] = avail[idx];
+
+        // remove element at idx
+        for (int j = idx; j < avail_size - 1; j++)
+            avail[j] = avail[j + 1];
+        avail_size--;
+    }
+}
 //==================== Find odd cycle ====================
 // Function to create a breakpoint graph from a given permutation
 int *creatingBreakpointGraph(int arr[], int size)
@@ -866,7 +920,6 @@ void save_D_to_file(const char *filename, int *D, long long size)
 int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
 {
     int *pi = (int *)malloc(n * sizeof(int));
-    int *pi_inv = NULL; // only needed for Lehmer ranks
 
     if (!pi)
     {
@@ -874,9 +927,26 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
         return NULL;
     }
 
-    compute_inverse(pi, pi_inv, n);
+    int *pi_inv = malloc(n * sizeof(int));
+    if (!pi_inv)
+    {
+        printf("Failed to allocate pi_inv\n");
+        free(pi);
+        return NULL;
+    }
+
+    long long FACT = factorial(n);
+
+    printf("Clearing arrays for %s computation...\n", rank_name);
+    for (long long i = 0; i < FACT; i++)
+    {
+        D[i] = -1; // Use -1 to indicate uncomputed distances
+        visited[i] = false;
+    }
+
     // Identity permutation
     initialize_identity_permutation(pi, n);
+    compute_inverse(pi, pi_inv, n);
 
     int pid;
     if (strcmp(rank_name, "Lex") == 0)
@@ -885,15 +955,19 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
         pid = rank2_safe(n, pi, pi_inv);
     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
         pid = rank_safe(n, pi, pi_inv);
-    else
-        D[pid] = 0;
+    else if (strcmp(rank_name, "ReverseColexOrder") == 0)
+        pid = rankReverseColexOrder(pi, n);
+
+    D[pid] = 0;
     visited[pid] = true;
 
     initQueue();
     enqueue(pid);
 
     long long processed = 0;
-    int result[MAX_N];
+    int *result = (int *)malloc(n * sizeof(int));
+    int *tmp = (int *)malloc(n * sizeof(int));
+    int *tmp_inv = (int *)malloc(n * sizeof(int));
     while (!isEmpty())
     {
         processed++;
@@ -908,12 +982,17 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
         if (strcmp(rank_name, "Lex") == 0)
             unrank_lex(n, current_rank, result);
         else if (strcmp(rank_name, "Lehmer") == 0)
+        {
+            initialize_identity_permutation(result, n);
             unrank2(n, current_rank, result);
+        }
         else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+        {
+            initialize_identity_permutation(result, n);
             unrank1(n, current_rank, result);
-
-        int tmp[MAX_N];
-        int tmp_inv[MAX_N];
+        }
+        else if (strcmp(rank_name, "ReverseColexOrder") == 0)
+            unrankReverseColexOrder(n, current_rank, result);
 
         for (int i = 0; i < n; ++i)
             for (int j = i + 1; j < n; ++j)
@@ -948,6 +1027,8 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
                         rank_tmp = rank2_safe(n, tmp, tmp_inv);
                     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
                         rank_tmp = rank_safe(n, tmp, tmp_inv);
+                    else if (strcmp(rank_name, "ReverseColexOrder") == 0)
+                        rank_tmp = rankReverseColexOrder(tmp, n);
 
                     if (rank_tmp < 0 || rank_tmp >= FACT)
                     {
@@ -960,6 +1041,8 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
                     {
                         visited[rank_tmp] = true;
                         D[rank_tmp] = D[current_rank] + 1;
+                        printf("Rank: %d\n", rank_tmp);
+                        printf("Distance: %d\n", D[rank_tmp]);
                         enqueue(rank_tmp);
                     }
                 }
@@ -967,12 +1050,11 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
 
     printf("Total processed: %lld permutations\n", processed);
 
-    char filename[512];
+    // char filename[512];
     // snprintf(filename, sizeof(filename),
     //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistance%sRank/distances_n%d.txt", rank_name, n);
     // save_D_to_file(filename, D, FACT);
 
-    free(pi);
     return D;
 }
 
@@ -1001,6 +1083,8 @@ int distance_between_2_permutations(int n, int *pi, int *sigma, int *D, const ch
         r = rank2_safe(n, composed, composed_inv);
     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
         r = rank_safe(n, composed, composed_inv);
+    else if (strcmp(rank_name, "ReverseColexOrder") == 0)
+        r = rankReverseColexOrder(composed, n);
 
     return D[r]; // lookup precomputed distance
 }
@@ -1037,7 +1121,8 @@ long long T_n_d(int n, int d, int *D, const char *rank_name)
                 unrank2(n, (int)i, pi);
             else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
                 unrank1(n, (int)i, pi);
-
+            else if (strcmp(rank_name, "ReverseColexOrder") == 0)
+                unrankReverseColexOrder(n, (int)i, pi);
             // print_array(pi, n);
 
             // Forbid all permutations within distance d-1 of pi
@@ -1062,6 +1147,12 @@ long long T_n_d(int n, int d, int *D, const char *rank_name)
                     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
                     {
                         unrank1(n, (int)j, sigma);
+                        // Compute distance between pi and sigma
+                        dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
+                    }
+                    else if (strcmp(rank_name, "ReverseColexOrder") == 0)
+                    {
+                        unrankReverseColexOrder(n, (int)j, sigma);
                         // Compute distance between pi and sigma
                         dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
                     }
