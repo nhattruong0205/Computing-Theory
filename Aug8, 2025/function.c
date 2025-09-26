@@ -395,8 +395,115 @@ void unrank2(int n, int r, int pi[])
     }
 }
 
-// Reverse Lehmer
-int rankReverseColexOrder(int pi[], int n)
+int rankSJT(int n, int *pi)
+{
+    int j, k, r;
+
+    if (n == 1)
+        return 0;
+
+    // Find position of largest element (n-1 in 0-based)
+    j = 0;
+    while (pi[j] != n - 1)
+    {
+        j++;
+    }
+
+    // Count elements to the left that are smaller than n-1
+    k = 0;
+    for (int i = 0; i < j; i++)
+    {
+        if (pi[i] < n - 1)
+        {
+            k++;
+        }
+    }
+
+    // Create reduced permutation by removing the largest element
+    // and reducing all elements > pi[i] by 1
+    int *reduced_pi = (int *)malloc((n - 1) * sizeof(int));
+    if (!reduced_pi)
+    {
+        printf("Memory allocation failed in rankSJT\n");
+        return -1;
+    }
+
+    int idx = 0;
+    for (int i = 0; i < n; i++)
+    {
+        if (pi[i] != n - 1)
+        { // Skip the largest element
+            // Reduce elements larger than current by 1
+            reduced_pi[idx] = pi[i] > (n - 1) ? pi[i] - 1 : pi[i];
+            idx++;
+        }
+    }
+
+    // Recursive call
+    r = rankSJT(n - 1, reduced_pi);
+    free(reduced_pi);
+
+    // Apply the SJT ranking formula
+    if (r % 2 == 1)
+    { // r is odd
+        return n * r + k;
+    }
+    else
+    { // r is even
+        return n * r + n - 1 - k;
+    }
+}
+
+// Algorithm 5.14: Unranking algorithm for SJT algorithm
+void unrankSJT(int n, int r, int *pi, int *dir)
+{
+    int j, k, rem, c;
+
+    // Initialize pi array to 0
+    for (j = 0; j < n; j++)
+    {
+        pi[j] = 0;
+    }
+
+    // Process from n down to 1
+    for (j = n; j >= 1; j--)
+    {
+        rem = r % j;
+        r = r / j;
+
+        if (r % 2 == 1)
+        {                   // r is odd
+            k = -1;         // Start at -1 so first increment gives 0
+            dir[j - 1] = 1; // Moving right
+        }
+        else
+        {
+            k = n;           // Start at n so first increment gives n-1
+            dir[j - 1] = -1; // Moving left
+        }
+
+        c = -1;
+
+        do
+        {
+            k = k + dir[j - 1];
+
+            // Add bounds checking to prevent segmentation fault
+            if (k < 0 || k >= n)
+            {
+                printf("Error: k out of bounds in unrankSJT: k=%d, n=%d, j=%d\n", k, n, j);
+                return;
+            }
+
+            if (pi[k] == 0)
+                c = c + 1;
+        } while (c != rem);
+
+        pi[k] = j - 1; // Convert to 0-based: store j-1 instead of j
+    }
+}
+// Reverse Colex order
+int rankReverseColexOrder(int n, int pi[])
 {
     int r = 0;
     int f = 1;
@@ -944,6 +1051,8 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
         visited[i] = false;
     }
 
+    int *result_dir = (int *)malloc(n * sizeof(int));
+
     // Identity permutation
     initialize_identity_permutation(pi, n);
     compute_inverse(pi, pi_inv, n);
@@ -955,8 +1064,10 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
         pid = rank2_safe(n, pi, pi_inv);
     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
         pid = rank_safe(n, pi, pi_inv);
+    else if (strcmp(rank_name, "SJT") == 0)
+        pid = rankSJT(n, pi);
     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
-        pid = rankReverseColexOrder(pi, n);
+        pid = rankReverseColexOrder(n, pi);
 
     D[pid] = 0;
     visited[pid] = true;
@@ -982,15 +1093,11 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
         if (strcmp(rank_name, "Lex") == 0)
             unrank_lex(n, current_rank, result);
         else if (strcmp(rank_name, "Lehmer") == 0)
-        {
-            initialize_identity_permutation(result, n);
             unrank2(n, current_rank, result);
-        }
         else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-        {
-            initialize_identity_permutation(result, n);
             unrank1(n, current_rank, result);
-        }
+        else if (strcmp(rank_name, "SJT") == 0)
+            unrankSJT(n, current_rank, result, result_dir);
         else if (strcmp(rank_name, "ReverseColexOrder") == 0)
             unrankReverseColexOrder(n, current_rank, result);
 
@@ -1027,8 +1134,10 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
                         rank_tmp = rank2_safe(n, tmp, tmp_inv);
                     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
                         rank_tmp = rank_safe(n, tmp, tmp_inv);
+                    else if (strcmp(rank_name, "SJT") == 0)
+                        rank_tmp = rankSJT(n, tmp);
                     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
-                        rank_tmp = rankReverseColexOrder(tmp, n);
+                        rank_tmp = rankReverseColexOrder(n, tmp);
 
                     if (rank_tmp < 0 || rank_tmp >= FACT)
                     {
@@ -1041,8 +1150,8 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
                     {
                         visited[rank_tmp] = true;
                         D[rank_tmp] = D[current_rank] + 1;
-                        printf("Rank: %d\n", rank_tmp);
-                        printf("Distance: %d\n", D[rank_tmp]);
+                        // printf("Rank: %d\n", rank_tmp);
+                        // printf("Distance: %d\n", D[rank_tmp]);
                         enqueue(rank_tmp);
                     }
                 }
@@ -1083,8 +1192,10 @@ int distance_between_2_permutations(int n, int *pi, int *sigma, int *D, const ch
         r = rank2_safe(n, composed, composed_inv);
     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
         r = rank_safe(n, composed, composed_inv);
+    else if (strcmp(rank_name, "SJT") == 0)
+        r = rankSJT(n, composed);
     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
-        r = rankReverseColexOrder(composed, n);
+        r = rankReverseColexOrder(n, composed);
 
     return D[r]; // lookup precomputed distance
 }
@@ -1103,6 +1214,7 @@ long long T_n_d(int n, int d, int *D, const char *rank_name)
     long long code_size = 0;
     int pi[MAX_N], sigma[MAX_N];
     int pi_inv[MAX_N], sigma_inv[MAX_N];
+    int *result_dir = (int *)malloc(n * sizeof(int));
 
     // Greedy algorithm: keep selecting permutations until none remain
     for (long long i = 0; i < factorial(n); i++)
@@ -1121,6 +1233,8 @@ long long T_n_d(int n, int d, int *D, const char *rank_name)
                 unrank2(n, (int)i, pi);
             else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
                 unrank1(n, (int)i, pi);
+            else if (strcmp(rank_name, "SJT") == 0)
+                unrankSJT(n, (int)i, pi, result_dir);
             else if (strcmp(rank_name, "ReverseColexOrder") == 0)
                 unrankReverseColexOrder(n, (int)i, pi);
             // print_array(pi, n);
@@ -1147,6 +1261,12 @@ long long T_n_d(int n, int d, int *D, const char *rank_name)
                     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
                     {
                         unrank1(n, (int)j, sigma);
+                        // Compute distance between pi and sigma
+                        dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
+                    }
+                    else if (strcmp(rank_name, "SJT") == 0)
+                    {
+                        unrankSJT(n, (int)j, sigma, result_dir);
                         // Compute distance between pi and sigma
                         dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
                     }

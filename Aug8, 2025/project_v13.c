@@ -47,7 +47,7 @@ int main()
     initialize_identity_permutation(pi, n);
 
     //========================== OPTION ==============
-    int opt = 2;
+    int opt = 4;
     //========================== OPTION ==============
     const char *rank_name = NULL;
 
@@ -104,20 +104,46 @@ int main()
         }
         break;
     }
+    case 4:
+    {
+        rank_name = "SJT";
+
+        // Allocate arrays for testing
+        int *dir = (int *)malloc(n * sizeof(int));
+        int *test_pi = (int *)malloc(n * sizeof(int));
+
+        // for (int index = 0; index < FACT; index++)
+        // {
+        //     unrankSJT(index, n, test_pi, dir);
+        //     int computed_rank = rankSJT(n, test_pi);
+        //     printf("Current rank: %d", computed_rank);
+        // }
+        int *distance_array_SJT = ComputeTDistanceFromIdentity(n, rank_name);
+        // int *distance_array_SJT = load_D_from_file(n, &size, rank_name);
+
+        printf("T(n,d) using SJT ranking:");
+        printf("\n");
+        for (int d = 2; d < 8; ++d)
+        {
+            long long result = T_n_d(n, d, distance_array_SJT, rank_name);
+            printf("T(%d,%d) = %lld\n", n, d, result);
+        }
+
+        break;
+    }
     case 5:
     {
-
         rank_name = "ReverseColexOrder";
-        int *distance_array_ReverseColexOrder = ComputeTDistanceFromIdentity(n, rank_name);
-        //  int *distance_array_ReverseColexOrder = load_D_from_file(n, &size, rank_name);
+        // int *distance_array_ReverseColexOrder = ComputeTDistanceFromIdentity(n, rank_name);
+        int *distance_array_ReverseColexOrder = load_D_from_file(n, &size, rank_name);
         printf("T(n,d) using Reverse Colex Order ranking:");
         printf("\n");
 
-        // for (int d = 2; d < 8; ++d)
-        // {
-        //     long long result = T_n_d(n, d, distance_array_ReverseColexOrder, rank_name);
-        //     printf("T(%d,%d) = %lld\n", n, d, result);
-        // }
+        for (int d = 4; d < 8; ++d)
+        {
+            long long result = T_n_d(n, d, distance_array_ReverseColexOrder, rank_name);
+            printf("T(%d,%d) = %lld\n", n, d, result);
+        }
 
         break;
     }
