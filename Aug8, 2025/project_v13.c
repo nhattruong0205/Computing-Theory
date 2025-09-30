@@ -76,12 +76,12 @@ int main()
 
         // int *distance_array_Lex = load_D_from_file(n, &size, rank_name);
         printf("T(n,d) using Lexigraphical ranking:");
-        //  printf("\n");
-        //  for (int d = 1; d < 8; d++)
-        //  {
-        //      long long result = T_n_d(n, d, distance_array_Lex, rank_name);
-        //      printf("T(%d,%d) = %lld\n", n, d, result);
-        //  }
+        printf("\n");
+        for (int d = 1; d < 8; d++)
+        {
+            long long result = T_n_d(n, d, distance_array_Lex, rank_name);
+            printf("T(%d,%d) = %lld\n", n, d, result);
+        }
 
         // clock_t end_time = clock();
         // double total_program_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
@@ -118,7 +118,7 @@ int main()
         //     int computed_rank = rankSJT(n, test_pi);
         //     printf("Current rank: %d", computed_rank);
         // }
-        int *distance_array_SJT = ComputeTDistanceFromIdentity(n, rank_name);
+        //int *distance_array_SJT = ComputeTDistanceFromIdentity(n, rank_name);
         // int *distance_array_SJT = load_D_from_file(n, &size, rank_name);
 
         printf("T(n,d) using SJT ranking:");
