@@ -18,6 +18,55 @@ bool *visited;                 // Array to track visited permutations
 
 // ===================Helper functions====================
 // Helper to print a permutation
+int compare_long_long(const void *a, const void *b)
+{
+    long long arg1 = *(const long long *)a;
+    long long arg2 = *(const long long *)b;
+
+    if (arg1 < arg2)
+        return -1;
+    if (arg1 > arg2)
+        return 1;
+    return 0;
+}
+
+// Helper function to generate next permutation in lexicographic order
+bool next_permutation(int *arr, int n)
+{
+    // Find the largest index i such that arr[i] < arr[i + 1]
+    int i = n - 2;
+    while (i >= 0 && arr[i] >= arr[i + 1])
+        i--;
+
+    // If no such index exists, we're at the last permutation
+    if (i < 0)
+        return false;
+
+    // Find the largest index j greater than i such that arr[i] < arr[j]
+    int j = n - 1;
+    while (arr[j] <= arr[i])
+        j--;
+
+    // Swap arr[i] and arr[j]
+    int temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+
+    // Reverse the suffix starting at arr[i + 1]
+    int left = i + 1;
+    int right = n - 1;
+    while (left < right)
+    {
+        temp = arr[left];
+        arr[left] = arr[right];
+        arr[right] = temp;
+        left++;
+        right--;
+    }
+
+    return true;
+}
+
 void print_array(int arr[], int n)
 {
     printf("[");
@@ -581,10 +630,10 @@ int *creatingBreakpointGraph(int arr[], int size)
 }
 
 //----------------Edges
-static inline int L(int x) { return 2 * x - 1; } // left endpoint
-static inline int R(int x) { return 2 * x; }     // right endpoint
+int L(int x) { return 2 * x - 1; } // left endpoint
+int R(int x) { return 2 * x; }     // right endpoint
 
-static void add_edge(int (*adj)[2], int *deg, int u, int v, const char *label)
+void add_edge(int (*adj)[2], int *deg, int u, int v, const char *label)
 {
     if (deg[u] >= 2 || deg[v] >= 2)
     {
@@ -596,7 +645,7 @@ static void add_edge(int (*adj)[2], int *deg, int u, int v, const char *label)
     // printf("%s: %d -- %d\n", label, u, v);
 }
 
-static void build_black_edges_from_perm(int (*adj)[2], int *deg, int *pi, int n)
+void build_black_edges_from_perm(int (*adj)[2], int *deg, int *pi, int n)
 {
     for (int i = 0; i < n; i++)
     {
@@ -606,7 +655,7 @@ static void build_black_edges_from_perm(int (*adj)[2], int *deg, int *pi, int n)
     }
 }
 
-static void build_gray_edges_identity(int (*adj)[2], int *deg, int n)
+void build_gray_edges_identity(int (*adj)[2], int *deg, int n)
 {
     for (int i = 1; i <= n; i++)
     {
@@ -615,7 +664,7 @@ static void build_gray_edges_identity(int (*adj)[2], int *deg, int n)
     }
 }
 
-static void count_cycles_colored(int (*adj)[2], int n)
+void count_cycles_colored(int (*adj)[2], int n)
 {
     int V = 2 * n;
     int *vis = calloc(V + 1, sizeof(int));
@@ -1159,10 +1208,11 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
 
     printf("Total processed: %lld permutations\n", processed);
 
-    // char filename[512];
-    // snprintf(filename, sizeof(filename),
-    //          "/Users/nhattruong/Documents/ComputingTheoryDArraydistance%sRank/distances_n%d.txt", rank_name, n);
-    // save_D_to_file(filename, D, FACT);
+    // Comment after
+    char filename[512];
+    snprintf(filename, sizeof(filename),
+             "/Users/nhattruong/Documents/ComputingTheoryDArraydistance%sRank/distances_n%d.txt", rank_name, n);
+    save_D_to_file(filename, D, FACT);
 
     return D;
 }
@@ -1289,6 +1339,127 @@ long long T_n_d(int n, int d, int *D, const char *rank_name)
 
     free(forbidden);
     return code_size;
+}
+
+// Check if rank in selected
+bool is_rank_in_selected(long long *selected, int size, long long rank)
+{
+    // LINEAR SEARCH - works on unsorted arrays
+    for (int i = 0; i < size; i++)
+    {
+        if (selected[i] == rank)
+        {
+            return true; // Found
+        }
+    }
+    return false; // Not found
+}
+
+long long *compute_ranks(int n, int perms[][n], int num_perms)
+{
+    long long *selected = (long long *)malloc(num_perms * sizeof(long long));
+
+    for (int i = 0; i < num_perms; i++)
+    {
+        int pi_working[n];
+        int pi_inv[n];
+
+        // Copy permutation
+        for (int j = 0; j < n; j++)
+        {
+            pi_working[j] = perms[i][j];
+        }
+
+        // Compute inverse
+        compute_inverse(pi_working, pi_inv, n);
+
+        // Compute and store rank
+        selected[i] = rank_safe(n, pi_working, pi_inv);
+    }
+
+    return selected;
+}
+
+bool can_add_to_code_incremental_d2(int n, int *pi, long long *selected, int code_size, const char *rank_name)
+{
+    int neighbor[MAX_N];
+    int neighbor_inv[MAX_N]; // Add this for inverse computation
+    int *result_dir = (int *)malloc(n * sizeof(int));
+    int pi_inv[n];
+    compute_inverse(pi, pi_inv, n);
+
+    // First check if pi itself is already in A
+    long long pi_rank;
+    if (strcmp(rank_name, "Lex") == 0)
+        pi_rank = rank_lex(pi, n);
+    else if (strcmp(rank_name, "Lehmer") == 0)
+        pi_rank = rank2_safe(n, pi, pi_inv);
+    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+        pi_rank = rank_safe(n, pi, pi_inv);
+    else if (strcmp(rank_name, "SJT") == 0)
+        pi_rank = rankSJT(n, pi);
+    else if (strcmp(rank_name, "ReverseColexOrder") == 0)
+        pi_rank = rankReverseColexOrder(n, pi);
+
+    if (is_rank_in_selected(selected, code_size, pi_rank))
+    {
+        free(result_dir);
+        return false; // pi is already in A
+    }
+
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = i + 1; j < n; ++j)
+        {
+            for (int k = j; k < n; ++k)
+            {
+                /* Build translocated permutation */
+                int idx = 0;
+
+                // 1. Prefix: [0..i-1]
+                for (int x = 0; x < i; ++x)
+                    neighbor[idx++] = pi[x];
+
+                // 2. Block: [j..k]
+                for (int x = j; x <= k; ++x)
+                    neighbor[idx++] = pi[x];
+
+                // 3. Middle: [i..j-1]
+                for (int x = i; x < j; ++x)
+                    neighbor[idx++] = pi[x];
+
+                // 4. Suffix: [k+1..n-1]
+                for (int x = k + 1; x < n; ++x)
+                    neighbor[idx++] = pi[x];
+
+                // Compute inverse for neighbor if needed
+                compute_inverse(neighbor, neighbor_inv, n);
+
+                // Get rank of this neighbor - FIXED: use 'neighbor' not 'tmp'
+                long long neighbor_rank;
+                if (strcmp(rank_name, "Lex") == 0)
+                    neighbor_rank = rank_lex(neighbor, n);
+                else if (strcmp(rank_name, "Lehmer") == 0)
+                    neighbor_rank = rank2_safe(n, neighbor, neighbor_inv);
+                else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+                    neighbor_rank = rank_safe(n, neighbor, neighbor_inv);
+                else if (strcmp(rank_name, "SJT") == 0)
+                    neighbor_rank = rankSJT(n, neighbor);
+                else if (strcmp(rank_name, "ReverseColexOrder") == 0)
+                    neighbor_rank = rankReverseColexOrder(n, neighbor);
+
+                // Check if this neighbor is in A
+                if (is_rank_in_selected(selected, code_size, neighbor_rank))
+                {
+                    free(result_dir);
+                    return false; // A 1-neighbor of pi is already in A
+                }
+            }
+        }
+    }
+
+    free(result_dir);
+    return true; // Can safely add pi to A
 }
 
 // ============== Print bad permutation ==================
@@ -2157,4 +2328,168 @@ void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array
     printf("Max_len + Odd Cycle level-2 with n = %d\n", n);
 
     printf("Number of bad permutation: %d\n", count);
+}
+
+// Function to compute a (n,2)-PA using greedy construction
+int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name)
+{
+    int code_size = 0;
+    long long *selected = (long long *)malloc(max_size * sizeof(long long));
+    int D[MAX_N] = {0}; // Distance array (not strictly needed for d=2)
+
+    // Start with identity permutation
+    int pi[MAX_N];
+    for (int i = 0; i < n; i++)
+    {
+        pi[i] = i;
+        perms[code_size][i] = i;
+    }
+
+    // Compute rank of identity and add to selected
+    int pi_inv[MAX_N];
+    compute_inverse(pi, pi_inv, n);
+    selected[0] = rank_safe(n, pi, pi_inv);
+    code_size = 1;
+
+    printf("Starting greedy construction...\n");
+    // printf("Added permutation %d: ", code_size);
+    // print_array(pi, n);
+
+    // Generate permutations and try to add them
+    long long total_perms = 1;
+    for (int i = 1; i <= n; i++)
+        total_perms *= i;
+
+    int current_perm[MAX_N];
+    for (int i = 0; i < n; i++)
+        current_perm[i] = i;
+
+    // Try all permutations in lexicographic order
+    long long checked = 0;
+    do
+    {
+        checked++;
+
+        // Check if this permutation can be added
+        if (can_add_to_code_incremental_d2(n, current_perm, selected, code_size, "LehmerAscendingRadix"))
+        {
+            // Add this permutation to the code
+            for (int i = 0; i < n; i++)
+            {
+                perms[code_size][i] = current_perm[i];
+            }
+
+            // Compute and store its rank
+            int temp_inv[MAX_N];
+            compute_inverse(current_perm, temp_inv, n);
+            selected[code_size] = rank_safe(n, current_perm, temp_inv);
+            code_size++;
+
+            // printf("Added permutation %d: ", code_size);
+            // print_array(current_perm, n);
+
+            // Check if we've reached max size
+            if (code_size >= max_size)
+            {
+                printf("Reached maximum code size: %d\n", max_size);
+                break;
+            }
+        }
+
+        // Progress indicator
+        if (checked % 10000 == 0)
+        {
+            printf("Progress: checked %lld/%lld permutations, code size = %d\n",
+                   checked, total_perms, code_size);
+        }
+
+    } while (next_permutation(current_perm, n) && code_size < max_size);
+
+    printf("\nFinal code size: %d\n", code_size);
+    printf("Checked %lld permutations\n", checked);
+
+    free(selected);
+    return code_size;
+}
+
+bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name)
+{
+    // Step 1: Sort A in lexicographical order (using ranks)
+    long long *selected = compute_ranks(n, perms, num_perms);
+
+    // Sort the ranks array
+    qsort(selected, num_perms, sizeof(long long), compare_long_long);
+
+    // Step 2: Check for duplicates
+    for (int i = 0; i < num_perms - 1; i++)
+    {
+        if (selected[i] == selected[i + 1])
+        {
+            free(selected);
+            return false; // Found duplicate
+        }
+    }
+
+    // Step 5-9: For each permutation, check all transpositions
+    for (int perm_idx = 0; perm_idx < num_perms; perm_idx++)
+    {
+        int *pi = perms[perm_idx];
+
+        // Step 6: Generate all (i,j,k)-transpositions
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = i + 1; j < n; j++)
+            {
+                for (int k = j; k < n; k++)
+                {
+                    // Step 7: Build transposed permutation τ
+                    int tau[MAX_N];
+                    int idx = 0;
+
+                    // 1. Prefix: [0..i-1]
+                    for (int x = 0; x < i; x++)
+                        tau[idx++] = pi[x];
+
+                    // 2. Block: [j..k]
+                    for (int x = j; x <= k; x++)
+                        tau[idx++] = pi[x];
+
+                    // 3. Middle: [i..j-1]
+                    for (int x = i; x < j; x++)
+                        tau[idx++] = pi[x];
+
+                    // 4. Suffix: [k+1..n-1]
+                    for (int x = k + 1; x < n; x++)
+                        tau[idx++] = pi[x];
+
+                    // Compute rank of τ
+                    int tau_inv[MAX_N];
+                    compute_inverse(tau, tau_inv, n);
+
+                    long long tau_rank;
+                    if (strcmp(rank_name, "Lex") == 0)
+                        tau_rank = rank_lex(tau, n);
+                    else if (strcmp(rank_name, "Lehmer") == 0)
+                        tau_rank = rank2_safe(n, tau, tau_inv);
+                    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+                        tau_rank = rank_safe(n, tau, tau_inv);
+                    else if (strcmp(rank_name, "SJT") == 0)
+                        tau_rank = rankSJT(n, tau);
+                    else if (strcmp(rank_name, "ReverseColexOrder") == 0)
+                        tau_rank = rankReverseColexOrder(n, tau);
+
+                    // Step 8: Binary search for τ in A
+                    if (is_rank_in_selected(selected, num_perms, tau_rank))
+                    {
+                        free(selected);
+                        return false; // τ not found in A
+                    }
+                }
+            }
+        }
+    }
+
+    // Step 10: All checks passed
+    free(selected);
+    return true;
 }

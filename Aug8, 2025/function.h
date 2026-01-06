@@ -5,6 +5,10 @@
 // Declaration of function
 
 // ---------- Helper function-----------------
+int compare_long_long(const void *a, const void *b);
+bool is_rank_in_selected(long long *selected, int size, long long rank);
+bool next_permutation(int *arr, int n);
+
 void print_array(int arr[], int n);
 void compute_inverse(int pi[], int pi_inv[], int n);
 void shift_permutation_by_one(int *src, int *dest, int n);
@@ -44,12 +48,12 @@ void unrankRReverseColexOrder(int n, int r, int pi[]);
 
 // ============== Computing cycles functions ==========
 int *creatingBreakpointGraph(int arr[], int size);
-static inline int L(int x);
-static inline int R(int x);
-static void add_edge(int (*adj)[2], int *deg, int u, int v, const char *label);
-static void build_black_edges_from_perm(int (*adj)[2], int *deg, int *pi, int n);
-static void build_gray_edges_identity(int (*adj)[2], int *deg, int n);
-static void count_cycles_colored(int (*adj)[2], int n);
+int L(int x);
+int R(int x);
+void add_edge(int (*adj)[2], int *deg, int u, int v, const char *label);
+void build_black_edges_from_perm(int (*adj)[2], int *deg, int *pi, int n);
+void build_gray_edges_identity(int (*adj)[2], int *deg, int n);
+void count_cycles_colored(int (*adj)[2], int n);
 int count_odd_cycles(int (*adj)[2], int n);
 void print_cycles(int (*adj)[2], int n);
 void reset_graph(int n, int adj[][2], int *deg);
@@ -92,6 +96,14 @@ int distance_between_2_permutations(int n, int *pi, int *sigma, int *D, const ch
 // Computing T(n,d) PA - an array A of permutation on [1..n] with dt(A) >= d.
 long long T_n_d(int n, int d, int *D, const char *rank_name); // Using Lehmer Ascending Radix ranking
 
+bool is_rank_in_selected(long long *selected, int size, long long rank);
+
+// Compute rank of list permutation
+long long *compute_ranks(int n, int perms[][n], int num_perms);
+
+// A in PA, Adding \pi to A and check if A + \pi is still in PA
+bool can_add_to_code_incremental_d2(int n, int *pi, long long *selected, int code_size, const char *rank_name);
+
 // ============== Print bad permutation ==================
 // Max len based on max consecutive values
 void printBadTranslocationMaxConsecutiveValue_Level1(int n, int *distance_array);
@@ -104,6 +116,13 @@ void printBadTranslocationOddCycle_Level2(int n, int *distance_array);
 // Combine longest_increasing_consecutive_values and max_odd_cycle
 void printBadTranslocationFromIdentityCombined_Level1(int n, int *distance_array);
 void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array);
+
+// Function to compute a (n,2)-PA using greedy construction
+int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name);
+
+bool next_permutation(int *arr, int n);
+// =========== Verify (n,2)-PA
+bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name);
 
 // ============== Check if bad permutation =====================================
 #endif /* FUNCTION_H */
