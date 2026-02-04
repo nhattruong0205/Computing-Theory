@@ -2331,11 +2331,10 @@ void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array
 }
 
 // Function to compute a (n,2)-PA using greedy construction with checkpointing
-int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name)
+// Returns the code size, fills selected array with ranks only
+int compute_n2_PA(int n, long long *selected, int max_size, const char *rank_name)
 {
     int code_size = 0;
-    long long *selected = (long long *)malloc(max_size * sizeof(long long));
-    int D[MAX_N] = {0}; // Distance array (not strictly needed for d=2)
 
     char checkpoint_file[256];
     snprintf(checkpoint_file, sizeof(checkpoint_file), "checkpoint_n%d.txt", n);
@@ -2357,7 +2356,7 @@ int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name)
         // Read code size
         fscanf(fp, "%d\n", &code_size);
 
-        // Read selected ranks (but don't unrank yet)
+        // Read selected ranks
         for (int i = 0; i < code_size; i++)
         {
             fscanf(fp, "%lld\n", &selected[i]);
@@ -2377,7 +2376,6 @@ int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name)
             printf("Error: Invalid last_checked rank %lld (max is %lld)\n",
                    last_checked, total_perms - 1);
             printf("Checkpoint file is corrupted. Please delete checkpoint_n%d.txt and restart.\n", n);
-            free(selected);
             return -1;
         }
 
@@ -2389,26 +2387,9 @@ int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name)
                 printf("Error: Invalid rank at position %d: %lld (max is %lld)\n",
                        i, selected[i], total_perms - 1);
                 printf("Checkpoint file is corrupted. Please delete checkpoint_n%d.txt and restart.\n", n);
-                free(selected);
                 return -1;
             }
         }
-
-        printf("Unranking %d permutations...\n", code_size);
-
-        // NOW it's safe to unrank
-        for (int i = 0; i < code_size; i++)
-        {
-            // Initialize with identity permutation FIRST
-            for (int j = 0; j < n; j++)
-            {
-                perms[i][j] = j;
-            }
-            // Then unrank
-            unrank1(n, selected[i], perms[i]);
-        }
-
-        printf("Unranking complete.\n");
 
         // Check if we've already completed
         if (last_checked >= total_perms - 1)
@@ -2452,7 +2433,6 @@ int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name)
         for (int i = 0; i < n; i++)
         {
             pi[i] = i;
-            perms[code_size][i] = i;
             current_perm[i] = i;
         }
 
@@ -2475,12 +2455,6 @@ int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name)
         // Check if this permutation can be added
         if (can_add_to_code_incremental_d2(n, current_perm, selected, code_size, rank_name))
         {
-            // Add this permutation to the code
-            for (int i = 0; i < n; i++)
-            {
-                perms[code_size][i] = current_perm[i];
-            }
-
             // Compute and store its rank
             int temp_inv[MAX_N];
             compute_inverse(current_perm, temp_inv, n);
@@ -2537,9 +2511,219 @@ int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name)
         fclose(fp);
     }
 
-    free(selected);
     return code_size;
 }
+
+// // Function to compute a (n,2)-PA using greedy construction with checkpointing
+// int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name)
+// {
+//     int code_size = 0;
+//     long long *selected = (long long *)malloc(max_size * sizeof(long long));
+//     int D[MAX_N] = {0}; // Distance array (not strictly needed for d=2)
+
+//     char checkpoint_file[256];
+//     snprintf(checkpoint_file, sizeof(checkpoint_file), "checkpoint_n%d.txt", n);
+
+//     // Calculate total permutations
+//     long long total_perms = 1;
+//     for (int i = 1; i <= n; i++)
+//         total_perms *= i;
+
+//     // Try to resume from checkpoint
+//     FILE *fp = fopen(checkpoint_file, "r");
+//     int current_perm[MAX_N];
+//     long long last_checked = -1;
+
+//     if (fp != NULL)
+//     {
+//         printf("Found checkpoint file, resuming...\n");
+
+//         // Read code size
+//         fscanf(fp, "%d\n", &code_size);
+
+//         // Read selected ranks (but don't unrank yet)
+//         for (int i = 0; i < code_size; i++)
+//         {
+//             fscanf(fp, "%lld\n", &selected[i]);
+//         }
+
+//         // Read last checked permutation rank
+//         fscanf(fp, "%lld\n", &last_checked);
+
+//         fclose(fp);
+
+//         printf("Resumed: code_size=%d, last_checked=%lld, total_perms=%lld\n",
+//                code_size, last_checked, total_perms);
+
+//         // VALIDATE BEFORE UNRANKING
+//         if (last_checked >= total_perms)
+//         {
+//             printf("Error: Invalid last_checked rank %lld (max is %lld)\n",
+//                    last_checked, total_perms - 1);
+//             printf("Checkpoint file is corrupted. Please delete checkpoint_n%d.txt and restart.\n", n);
+//             free(selected);
+//             return -1;
+//         }
+
+//         // Validate all selected ranks
+//         for (int i = 0; i < code_size; i++)
+//         {
+//             if (selected[i] >= total_perms || selected[i] < 0)
+//             {
+//                 printf("Error: Invalid rank at position %d: %lld (max is %lld)\n",
+//                        i, selected[i], total_perms - 1);
+//                 printf("Checkpoint file is corrupted. Please delete checkpoint_n%d.txt and restart.\n", n);
+//                 free(selected);
+//                 return -1;
+//             }
+//         }
+
+//         printf("Unranking %d permutations...\n", code_size);
+
+//         // NOW it's safe to unrank
+//         for (int i = 0; i < code_size; i++)
+//         {
+//             // Initialize with identity permutation FIRST
+//             for (int j = 0; j < n; j++)
+//             {
+//                 perms[i][j] = j;
+//             }
+//             // Then unrank
+//             unrank1(n, selected[i], perms[i]);
+//         }
+
+//         printf("Unranking complete.\n");
+
+//         // Check if we've already completed
+//         if (last_checked >= total_perms - 1)
+//         {
+//             printf("Already completed! All permutations checked.\n");
+//             printf("Final code size: %d\n", code_size);
+//             return code_size;
+//         }
+
+//         // Unrank to get the starting permutation
+//         if (last_checked >= 0)
+//         {
+//             // Initialize with identity permutation FIRST
+//             for (int i = 0; i < n; i++)
+//             {
+//                 current_perm[i] = i;
+//             }
+//             // Then unrank
+//             unrank1(n, last_checked, current_perm);
+
+//             // Advance to next permutation
+//             if (!next_permutation(current_perm, n))
+//             {
+//                 printf("Already completed!\n");
+//                 printf("Final code size: %d\n", code_size);
+//                 return code_size;
+//             }
+//         }
+//         else
+//         {
+//             for (int i = 0; i < n; i++)
+//                 current_perm[i] = i;
+//         }
+//     }
+//     else
+//     {
+//         printf("No checkpoint found, starting fresh...\n");
+
+//         // Start with identity permutation
+//         int pi[MAX_N];
+//         for (int i = 0; i < n; i++)
+//         {
+//             pi[i] = i;
+//             perms[code_size][i] = i;
+//             current_perm[i] = i;
+//         }
+
+//         // Compute rank of identity and add to selected
+//         int pi_inv[MAX_N];
+//         compute_inverse(pi, pi_inv, n);
+//         selected[0] = rank_safe(n, pi, pi_inv);
+//         code_size = 1;
+//     }
+
+//     printf("Starting greedy construction...\n");
+
+//     long long checked = (last_checked >= 0) ? last_checked + 1 : 0;
+//     int checkpoint_interval = 10000; // Save every 10000 permutations
+
+//     do
+//     {
+//         checked++;
+
+//         // Check if this permutation can be added
+//         if (can_add_to_code_incremental_d2(n, current_perm, selected, code_size, rank_name))
+//         {
+//             // Add this permutation to the code
+//             for (int i = 0; i < n; i++)
+//             {
+//                 perms[code_size][i] = current_perm[i];
+//             }
+
+//             // Compute and store its rank
+//             int temp_inv[MAX_N];
+//             compute_inverse(current_perm, temp_inv, n);
+//             selected[code_size] = rank_safe(n, current_perm, temp_inv);
+//             code_size++;
+
+//             // Check if we've reached max size
+//             if (code_size >= max_size)
+//             {
+//                 printf("Reached maximum code size: %d\n", max_size);
+//                 break;
+//             }
+//         }
+
+//         // Save checkpoint periodically
+//         if (checked % checkpoint_interval == 0)
+//         {
+//             printf("Progress: checked %lld/%lld permutations, code size = %d\n",
+//                    checked, total_perms, code_size);
+
+//             // Save checkpoint
+//             fp = fopen(checkpoint_file, "w");
+//             if (fp != NULL)
+//             {
+//                 fprintf(fp, "%d\n", code_size);
+//                 for (int i = 0; i < code_size; i++)
+//                 {
+//                     fprintf(fp, "%lld\n", selected[i]);
+//                 }
+//                 // Save current permutation rank (NOT checked counter!)
+//                 int temp_inv[MAX_N];
+//                 compute_inverse(current_perm, temp_inv, n);
+//                 long long current_rank = rank_safe(n, current_perm, temp_inv);
+//                 fprintf(fp, "%lld\n", current_rank);
+//                 fclose(fp);
+//             }
+//         }
+//     } while (next_permutation(current_perm, n) && code_size < max_size);
+
+//     printf("\nFinal code size: %d\n", code_size);
+//     printf("Checked %lld permutations\n", checked);
+
+//     // Save final checkpoint
+//     fp = fopen(checkpoint_file, "w");
+//     if (fp != NULL)
+//     {
+//         fprintf(fp, "%d\n", code_size);
+//         for (int i = 0; i < code_size; i++)
+//         {
+//             fprintf(fp, "%lld\n", selected[i]);
+//         }
+//         // Save the rank of the last permutation checked
+//         fprintf(fp, "%lld\n", total_perms - 1); // Mark as complete with max rank
+//         fclose(fp);
+//     }
+
+//     free(selected);
+//     return code_size;
+// }
 
 // // Function to compute a (n,2)-PA using greedy construction
 // int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name)
@@ -2623,12 +2807,65 @@ int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name)
 //     return code_size;
 // }
 
-bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name)
+bool verify_n2_PA(int n, const char *rank_name)
 {
-    // Step 1: Sort A in lexicographical order (using ranks)
-    long long *selected = compute_ranks(n, perms, num_perms);
+    char checkpoint_file[256];
+    snprintf(checkpoint_file, sizeof(checkpoint_file), "checkpoint_n%d.txt", n);
 
-    // Sort the ranks array
+    // Calculate total permutations
+    long long total_perms = 1;
+    for (int i = 1; i <= n; i++)
+        total_perms *= i;
+
+    // Open checkpoint file
+    FILE *fp = fopen(checkpoint_file, "r");
+    if (fp == NULL)
+    {
+        printf("Error: Checkpoint file not found!\n");
+        return false;
+    }
+
+    // Read code size
+    int num_perms;
+    fscanf(fp, "%d\n", &num_perms);
+
+    // Allocate memory for ranks
+    long long *selected = (long long *)malloc(num_perms * sizeof(long long));
+    if (!selected)
+    {
+        printf("Error: Memory allocation failed!\n");
+        fclose(fp);
+        return false;
+    }
+
+    // Read ONLY the code_size ranks (NOT the last_checked marker)
+    for (int i = 0; i < num_perms; i++)
+    {
+        fscanf(fp, "%lld\n", &selected[i]);
+    }
+    // printf("Loaded codeword ranks:\n");
+    // for (int i = 0; i < num_perms; i++)
+    // {
+    //     printf("  A[%d] = %lld\n", i, selected[i]);
+    // }
+    // We don't read the last line (progress marker) - it's not a codeword
+    fclose(fp);
+
+    printf("Verifying %d permutations...\n", num_perms);
+
+    // Validate all selected ranks
+    for (int i = 0; i < num_perms; i++)
+    {
+        if (selected[i] >= total_perms || selected[i] < 0)
+        {
+            printf("Error: Invalid rank at position %d: %lld (max is %lld)\n",
+                   i, selected[i], total_perms - 1);
+            free(selected);
+            return false;
+        }
+    }
+
+    // Sort the ranks array for binary search
     qsort(selected, num_perms, sizeof(long long), compare_long_long);
 
     // Step 2: Check for duplicates
@@ -2636,15 +2873,32 @@ bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name)
     {
         if (selected[i] == selected[i + 1])
         {
+            printf("Error: Found duplicate rank %lld at positions %d and %d\n",
+                   selected[i], i, i + 1);
             free(selected);
-            return false; // Found duplicate
+            return false;
         }
     }
+
+    printf("No duplicates found. Checking transpositions...\n");
 
     // Step 5-9: For each permutation, check all transpositions
     for (int perm_idx = 0; perm_idx < num_perms; perm_idx++)
     {
-        int *pi = perms[perm_idx];
+        // Unrank to get the permutation
+        int pi[MAX_N];
+        for (int i = 0; i < n; i++)
+        {
+            pi[i] = i;
+        }
+        unrank1(n, selected[perm_idx], pi);
+
+        // Progress indicator
+        if ((perm_idx + 1) % 100 == 0 || perm_idx == 0)
+        {
+            printf("Checking permutation %d/%d (rank %lld)...\n",
+                   perm_idx + 1, num_perms, selected[perm_idx]);
+        }
 
         // Step 6: Generate all (i,j,k)-transpositions
         for (int i = 0; i < n; i++)
@@ -2690,10 +2944,16 @@ bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name)
                         tau_rank = rankReverseColexOrder(n, tau);
 
                     // Step 8: Binary search for τ in A
+                    // If found, it means a transposition is in the code - INVALID!
                     if (is_rank_in_selected(selected, num_perms, tau_rank))
                     {
+                        printf("Error: Found transposition in code!\n");
+                        printf("Permutation at index %d (rank %lld): ", perm_idx, selected[perm_idx]);
+                        print_array(pi, n);
+                        printf("Transposition (i=%d, j=%d, k=%d) with rank %lld: ", i, j, k, tau_rank);
+                        print_array(tau, n);
                         free(selected);
-                        return false; // τ not found in A
+                        return false;
                     }
                 }
             }
@@ -2701,9 +2961,92 @@ bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name)
     }
 
     // Step 10: All checks passed
+    printf("All checks passed!\n");
     free(selected);
     return true;
 }
+
+// bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name)
+// {
+//     // Step 1: Sort A in lexicographical order (using ranks)
+//     long long *selected = compute_ranks(n, perms, num_perms);
+
+//     // Sort the ranks array
+//     qsort(selected, num_perms, sizeof(long long), compare_long_long);
+
+//     // Step 2: Check for duplicates
+//     for (int i = 0; i < num_perms - 1; i++)
+//     {
+//         if (selected[i] == selected[i + 1])
+//         {
+//             free(selected);
+//             return false; // Found duplicate
+//         }
+//     }
+
+//     // Step 5-9: For each permutation, check all transpositions
+//     for (int perm_idx = 0; perm_idx < num_perms; perm_idx++)
+//     {
+//         int *pi = perms[perm_idx];
+
+//         // Step 6: Generate all (i,j,k)-transpositions
+//         for (int i = 0; i < n; i++)
+//         {
+//             for (int j = i + 1; j < n; j++)
+//             {
+//                 for (int k = j; k < n; k++)
+//                 {
+//                     // Step 7: Build transposed permutation τ
+//                     int tau[MAX_N];
+//                     int idx = 0;
+
+//                     // 1. Prefix: [0..i-1]
+//                     for (int x = 0; x < i; x++)
+//                         tau[idx++] = pi[x];
+
+//                     // 2. Block: [j..k]
+//                     for (int x = j; x <= k; x++)
+//                         tau[idx++] = pi[x];
+
+//                     // 3. Middle: [i..j-1]
+//                     for (int x = i; x < j; x++)
+//                         tau[idx++] = pi[x];
+
+//                     // 4. Suffix: [k+1..n-1]
+//                     for (int x = k + 1; x < n; x++)
+//                         tau[idx++] = pi[x];
+
+//                     // Compute rank of τ
+//                     int tau_inv[MAX_N];
+//                     compute_inverse(tau, tau_inv, n);
+
+//                     long long tau_rank;
+//                     if (strcmp(rank_name, "Lex") == 0)
+//                         tau_rank = rank_lex(tau, n);
+//                     else if (strcmp(rank_name, "Lehmer") == 0)
+//                         tau_rank = rank2_safe(n, tau, tau_inv);
+//                     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+//                         tau_rank = rank_safe(n, tau, tau_inv);
+//                     else if (strcmp(rank_name, "SJT") == 0)
+//                         tau_rank = rankSJT(n, tau);
+//                     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
+//                         tau_rank = rankReverseColexOrder(n, tau);
+
+//                     // Step 8: Binary search for τ in A
+//                     if (is_rank_in_selected(selected, num_perms, tau_rank))
+//                     {
+//                         free(selected);
+//                         return false; // τ not found in A
+//                     }
+//                 }
+//             }
+//         }
+//     }
+
+//     // Step 10: All checks passed
+//     free(selected);
+//     return true;
+// }
 
 // bool verify_n2_PA(int n, const char *rank_name)
 // {

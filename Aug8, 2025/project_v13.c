@@ -13,15 +13,16 @@ int *D;
 
 int main()
 {
-    int n = 12;                             // Start with small n for testing
+    int n = 6;                              // Start with small n for testing
     long long max_code_size = 100000000000; // Maximum permutations we want
+    long long *selected = (long long *)malloc(max_code_size * sizeof(long long));
 
     // Allocate space for the permutation array
-    int (*perms)[n] = malloc(max_code_size * sizeof(*perms));
+    // int (*perms)[n] = malloc(max_code_size * sizeof(*perms));
 
     // Compute the (n,2)-PA
-    int code_size = compute_n2_PA(n, perms, max_code_size, "LehmerAscendingRadix");
-
+    // int code_size = compute_n2_PA(n, perms, max_code_size, "LehmerAscendingRadix");
+    int code_size = compute_n2_PA(n, selected, max_code_size, "LehmerAscendingRadix");
     printf("\n=== Final (n,2)-PA ===\n");
     printf("n = %d, code size = %d\n\n", n, code_size);
 
@@ -33,10 +34,12 @@ int main()
     }
 
     // Verify it's a valid (n,2)-PA
-    bool is_valid = verify_n2_PA(n, perms, code_size, "LehmerAscendingRadix");
+    // bool is_valid = verify_n2_PA(n, perms, code_size, "LehmerAscendingRadix");
+    bool is_valid = verify_n2_PA(n, "LehmerAscendingRadix");
+
     printf("\nVerification: %s\n", is_valid ? "VALID (n,2)-PA" : "INVALID");
 
-    free(perms);
+    // free(perms);
     return 0;
 }
 
