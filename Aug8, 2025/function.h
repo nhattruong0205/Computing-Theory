@@ -123,6 +123,7 @@ int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name);
 bool next_permutation(int *arr, int n);
 // =========== Verify (n,2)-PA
 bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name);
+// bool verify_n2_PA(int n, const char *rank_name);
 
 // ============== Check if bad permutation =====================================
 #endif /* FUNCTION_H */
