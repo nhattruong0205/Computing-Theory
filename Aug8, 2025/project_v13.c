@@ -11,35 +11,67 @@
 int n;
 int *D;
 
-int main()
+// int main()
+// {
+//     int n = 12;                             // Start with small n for testing
+//     long long max_code_size = 100000000000; // Maximum permutations we want
+//     long long *selected = (long long *)malloc(max_code_size * sizeof(long long));
+
+//     // Allocate space for the permutation array
+//     // int (*perms)[n] = malloc(max_code_size * sizeof(*perms));
+
+//     // Compute the (n,2)-PA
+//     // int code_size = compute_n2_PA(n, perms, max_code_size, "LehmerAscendingRadix");
+//     int code_size = compute_n2_PA(n, selected, max_code_size, "LehmerAscendingRadix");
+//     printf("\n=== Final (n,2)-PA ===\n");
+//     printf("n = %d, code size = %d\n\n", n, code_size);
+
+//     // Print all permutations in the code
+//     for (int i = 0; i < code_size; i++)
+//     {
+//         // printf("Perm %3d: ", i + 1);
+//         // print_array(perms[i], n);
+//     }
+
+//     // Verify it's a valid (n,2)-PA
+//     // bool is_valid = verify_n2_PA(n, perms, code_size, "LehmerAscendingRadix");
+//     bool is_valid = verify_n2_PA(n, "LehmerAscendingRadix");
+
+//     printf("\nVerification: %s\n", is_valid ? "VALID (n,2)-PA" : "INVALID");
+
+//     // free(perms);
+//     return 0;
+// }
+
+int main(void)
 {
-    int n = 12;                             // Start with small n for testing
-    long long max_code_size = 100000000000; // Maximum permutations we want
-    long long *selected = (long long *)malloc(max_code_size * sizeof(long long));
+    int n = 5;
 
-    // Allocate space for the permutation array
-    // int (*perms)[n] = malloc(max_code_size * sizeof(*perms));
+    // Example permutations on [1..n]
+    int pi[] = {1, 3, 5, 2, 4};
+    int sigma[] = {2, 3, 1, 5, 4};
 
-    // Compute the (n,2)-PA
-    // int code_size = compute_n2_PA(n, perms, max_code_size, "LehmerAscendingRadix");
-    int code_size = compute_n2_PA(n, selected, max_code_size, "LehmerAscendingRadix");
-    printf("\n=== Final (n,2)-PA ===\n");
-    printf("n = %d, code size = %d\n\n", n, code_size);
-
-    // Print all permutations in the code
-    for (int i = 0; i < code_size; i++)
+    // D is whatever your distance function expects.
+    // If your distance uses D as an n x n matrix, allocate n*n.
+    // If it uses D as a length-n array, this is still safe (it just has extra space).
+    int *D = (int *)calloc((size_t)n * (size_t)n, sizeof(int));
+    if (!D)
     {
-        // printf("Perm %3d: ", i + 1);
-        // print_array(perms[i], n);
+        printf("Failed to allocate D\n");
+        return 1;
     }
 
-    // Verify it's a valid (n,2)-PA
-    // bool is_valid = verify_n2_PA(n, perms, code_size, "LehmerAscendingRadix");
-    bool is_valid = verify_n2_PA(n, "LehmerAscendingRadix");
+    const char *rank_name = "Lex"; // or "Lehmer", "SJT", etc.
 
-    printf("\nVerification: %s\n", is_valid ? "VALID (n,2)-PA" : "INVALID");
+    printf("pi:    ");
+    print_array(pi, n);
+    printf("sigma: ");
+    print_array(sigma, n);
 
-    // free(perms);
+    int dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
+    printf("distance = %d\n", dist);
+
+    free(D);
     return 0;
 }
 

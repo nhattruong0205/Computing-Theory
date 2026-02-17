@@ -33,8 +33,6 @@ int *load_D_from_file(int n, long long *size_out, const char *rank_name);
 // === 4. SJT ===
 // === 5 ReverseColexOrder ===
 void swap(int *a, int *b);
-int rank_lex(int pi[], int n);
-void unrank_lex(int n, int r, int pi[]);
 int rank1(int n, int pi[], int pi_inv[]);
 int rank_safe(int n, const int src[], int *inv_buf);
 void unrank1(int n, int r, int pi[]);
@@ -120,6 +118,7 @@ void printBadTranslocationFromIdentityCombined_Level2(int n, int *distance_array
 // Function to compute a (n,2)-PA using greedy construction
 // int compute_n2_PA(int n, int perms[][n], int max_size, const char *rank_name);
 int compute_n2_PA(int n, long long *selected, int max_size, const char *rank_name);
+int compute_n2_PA_Greedy_Neighbor_Deletion(int n);
 
 bool next_permutation(int *arr, int n);
 // =========== Verify (n,2)-PA
