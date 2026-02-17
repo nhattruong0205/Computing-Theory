@@ -1060,11 +1060,9 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
 
     int pid;
     if (strcmp(rank_name, "Lex") == 0)
-        pid = rank_lex(pi, n);
+        pid = rank_safe(pi, n);
     else if (strcmp(rank_name, "Lehmer") == 0)
         pid = rank2_safe(n, pi, pi_inv);
-    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-        pid = rank_safe(n, pi, pi_inv);
     else if (strcmp(rank_name, "SJT") == 0)
         pid = rankSJT(n, pi);
     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -1092,11 +1090,9 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
 
         // Convert rank back to permutation
         if (strcmp(rank_name, "Lex") == 0)
-            unrank_lex(n, current_rank, result);
+            unrank1(n, current_rank, result);
         else if (strcmp(rank_name, "Lehmer") == 0)
             unrank2(n, current_rank, result);
-        else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-            unrank1(n, current_rank, result);
         else if (strcmp(rank_name, "SJT") == 0)
             unrankSJT(n, current_rank, result, result_dir);
         else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -1130,11 +1126,9 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
                     int rank_tmp;
                     // Convert rank back to permutation
                     if (strcmp(rank_name, "Lex") == 0)
-                        rank_tmp = rank_lex(tmp, n);
+                        rank_tmp = rank_safe(tmp, n);
                     else if (strcmp(rank_name, "Lehmer") == 0)
                         rank_tmp = rank2_safe(n, tmp, tmp_inv);
-                    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-                        rank_tmp = rank_safe(n, tmp, tmp_inv);
                     else if (strcmp(rank_name, "SJT") == 0)
                         rank_tmp = rankSJT(n, tmp);
                     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -1189,11 +1183,9 @@ int distance_between_2_permutations(int n, int *pi, int *sigma, int *D, const ch
 
     int r;
     if (strcmp(rank_name, "Lex") == 0)
-        r = rank_lex(composed, n);
+        r = rank_safe(composed, n);
     else if (strcmp(rank_name, "Lehmer") == 0)
         r = rank2_safe(n, composed, composed_inv);
-    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-        r = rank_safe(n, composed, composed_inv);
     else if (strcmp(rank_name, "SJT") == 0)
         r = rankSJT(n, composed);
     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -1230,11 +1222,9 @@ long long T_n_d(int n, int d, int *D, const char *rank_name)
             initialize_identity_permutation(pi, n);
 
             if (strcmp(rank_name, "Lex") == 0)
-                unrank_lex(n, (int)i, pi);
+                unrank1(n, (int)i, pi);
             else if (strcmp(rank_name, "Lehmer") == 0)
                 unrank2(n, (int)i, pi);
-            else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-                unrank1(n, (int)i, pi);
             else if (strcmp(rank_name, "SJT") == 0)
                 unrankSJT(n, (int)i, pi, result_dir);
             else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -1252,18 +1242,12 @@ long long T_n_d(int n, int d, int *D, const char *rank_name)
 
                     if (strcmp(rank_name, "Lex") == 0)
                     {
-                        unrank_lex(n, (int)j, sigma);
+                        unrank1(n, (int)j, sigma);
                         dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
                     }
                     else if (strcmp(rank_name, "Lehmer") == 0)
                     {
                         unrank2(n, (int)j, pi);
-                        dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
-                    }
-                    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-                    {
-                        unrank1(n, (int)j, sigma);
-                        // Compute distance between pi and sigma
                         dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
                     }
                     else if (strcmp(rank_name, "SJT") == 0)
@@ -1343,11 +1327,9 @@ bool can_add_to_code_incremental_d2(int n, int *pi, long long *selected, int cod
     // First check if pi itself is already in A
     long long pi_rank;
     if (strcmp(rank_name, "Lex") == 0)
-        pi_rank = rank_lex(pi, n);
+        pi_rank = rank_safe(pi, n);
     else if (strcmp(rank_name, "Lehmer") == 0)
         pi_rank = rank2_safe(n, pi, pi_inv);
-    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-        pi_rank = rank_safe(n, pi, pi_inv);
     else if (strcmp(rank_name, "SJT") == 0)
         pi_rank = rankSJT(n, pi);
     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -1390,11 +1372,9 @@ bool can_add_to_code_incremental_d2(int n, int *pi, long long *selected, int cod
                 // Get rank of this neighbor - FIXED: use 'neighbor' not 'tmp'
                 long long neighbor_rank;
                 if (strcmp(rank_name, "Lex") == 0)
-                    neighbor_rank = rank_lex(neighbor, n);
+                    neighbor_rank = rank_safe(neighbor, n);
                 else if (strcmp(rank_name, "Lehmer") == 0)
                     neighbor_rank = rank2_safe(n, neighbor, neighbor_inv);
-                else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-                    neighbor_rank = rank_safe(n, neighbor, neighbor_inv);
                 else if (strcmp(rank_name, "SJT") == 0)
                     neighbor_rank = rankSJT(n, neighbor);
                 else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -2954,11 +2934,9 @@ bool verify_n2_PA(int n, const char *rank_name)
 
                     long long tau_rank;
                     if (strcmp(rank_name, "Lex") == 0)
-                        tau_rank = rank_lex(tau, n);
+                        tau_rank = rank_safe(tau, n);
                     else if (strcmp(rank_name, "Lehmer") == 0)
                         tau_rank = rank2_safe(n, tau, tau_inv);
-                    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-                        tau_rank = rank_safe(n, tau, tau_inv);
                     else if (strcmp(rank_name, "SJT") == 0)
                         tau_rank = rankSJT(n, tau);
                     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -3043,11 +3021,9 @@ bool verify_n2_PA(int n, const char *rank_name)
 
 //                     long long tau_rank;
 //                     if (strcmp(rank_name, "Lex") == 0)
-//                         tau_rank = rank_lex(tau, n);
+//                         tau_rank = rank_safe(tau, n);
 //                     else if (strcmp(rank_name, "Lehmer") == 0)
 //                         tau_rank = rank2_safe(n, tau, tau_inv);
-//                     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-//                         tau_rank = rank_safe(n, tau, tau_inv);
 //                     else if (strcmp(rank_name, "SJT") == 0)
 //                         tau_rank = rankSJT(n, tau);
 //                     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
