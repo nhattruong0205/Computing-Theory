@@ -14,7 +14,7 @@ int *D;
 int main()
 {
     int n = 12;
-    compute_n2_PA_Greedy_Neighbor_Deletion(12);
+    compute_n2_PA_Greedy_Neighbor_Deletion(n);
 }
 
 // int main()

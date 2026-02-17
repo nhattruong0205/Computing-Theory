@@ -331,6 +331,54 @@ void swap(int *a, int *b)
     *b = temp;
 }
 
+// Original recursive rank lex function : computes the lexicographic rank of a permutation
+int rank_lex(int pi[], int n)
+{
+    int rank = 0;
+    int fact = 1;
+    for (int i = 2; i <= n; i++)
+        fact *= i; // fact = n!
+
+    bool used[MAX_N] = {false};
+
+    for (int i = 0; i < n; i++)
+    {
+        fact /= (n - i); // fact = (n-i-1)!
+        int smaller = 0;
+        for (int j = 0; j < pi[i]; j++)
+        {
+            if (!used[j])
+                smaller++;
+        }
+        rank += smaller * fact;
+        used[pi[i]] = true;
+    }
+    return rank;
+}
+
+// Build the permutation corresponding to rank r in lexicographic order
+void unrank_lex(int n, int r, int pi[])
+{
+    int fact = 1;
+    for (int i = 2; i <= n; i++)
+        fact *= i;
+
+    int elems[MAX_N];
+    for (int i = 0; i < n; i++)
+        elems[i] = i;
+
+    for (int i = 0; i < n; i++)
+    {
+        fact /= (n - i);
+        int idx = r / fact;
+        r = r % fact;
+        pi[i] = elems[idx];
+        // remove elems[idx]
+        for (int j = idx; j < n - i - 1; j++)
+            elems[j] = elems[j + 1];
+    }
+}
+
 // Original recursive rank1 function: computes the lexicographic rank of a permutation
 int rank1(int n, int pi[], int pi_inv[])
 {
@@ -1060,9 +1108,11 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
 
     int pid;
     if (strcmp(rank_name, "Lex") == 0)
-        pid = rank_safe(n, pi, pi_inv);
+        pid = rank_lex(pi, n);
     else if (strcmp(rank_name, "Lehmer") == 0)
         pid = rank2_safe(n, pi, pi_inv);
+    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+        pid = rank_safe(n, pi, pi_inv);
     else if (strcmp(rank_name, "SJT") == 0)
         pid = rankSJT(n, pi);
     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -1090,9 +1140,11 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
 
         // Convert rank back to permutation
         if (strcmp(rank_name, "Lex") == 0)
-            unrank1(n, current_rank, result);
+            unrank_lex(n, current_rank, result);
         else if (strcmp(rank_name, "Lehmer") == 0)
             unrank2(n, current_rank, result);
+        else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+            unrank1(n, current_rank, result);
         else if (strcmp(rank_name, "SJT") == 0)
             unrankSJT(n, current_rank, result, result_dir);
         else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -1126,9 +1178,11 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
                     int rank_tmp;
                     // Convert rank back to permutation
                     if (strcmp(rank_name, "Lex") == 0)
-                        rank_tmp = rank_safe(n, pi, pi_inv);
+                        rank_tmp = rank_lex(pi, n);
                     else if (strcmp(rank_name, "Lehmer") == 0)
                         rank_tmp = rank2_safe(n, tmp, tmp_inv);
+                    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+                        rank_tmp = rank_safe(n, tmp, tmp_inv);
                     else if (strcmp(rank_name, "SJT") == 0)
                         rank_tmp = rankSJT(n, tmp);
                     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -1183,9 +1237,11 @@ int distance_between_2_permutations(int n, int *pi, int *sigma, int *D, const ch
 
     int r;
     if (strcmp(rank_name, "Lex") == 0)
-        r = rank1_safe(n, composed, composed_inv);
+        r = rank_lex(composed, n);
     else if (strcmp(rank_name, "Lehmer") == 0)
         r = rank2_safe(n, composed, composed_inv);
+    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+        r = rank_safe(n, composed, composed_inv);
     else if (strcmp(rank_name, "SJT") == 0)
         r = rankSJT(n, composed);
     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -1222,9 +1278,11 @@ long long T_n_d(int n, int d, int *D, const char *rank_name)
             initialize_identity_permutation(pi, n);
 
             if (strcmp(rank_name, "Lex") == 0)
-                unrank1(n, (int)i, pi);
+                unrank_lex(n, (int)i, pi);
             else if (strcmp(rank_name, "Lehmer") == 0)
                 unrank2(n, (int)i, pi);
+            else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+                unrank1(n, (int)i, pi);
             else if (strcmp(rank_name, "SJT") == 0)
                 unrankSJT(n, (int)i, pi, result_dir);
             else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -1327,9 +1385,11 @@ bool can_add_to_code_incremental_d2(int n, int *pi, long long *selected, int cod
     // First check if pi itself is already in A
     long long pi_rank;
     if (strcmp(rank_name, "Lex") == 0)
-        pi_rank = rank_safe(n, pi, pi_inv);
+        pi_rank = rank_lex(pi, n);
     else if (strcmp(rank_name, "Lehmer") == 0)
         pi_rank = rank2_safe(n, pi, pi_inv);
+    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+        pi_rank = rank_safe(n, pi, pi_inv);
     else if (strcmp(rank_name, "SJT") == 0)
         pi_rank = rankSJT(n, pi);
     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
@@ -2448,7 +2508,8 @@ int compute_n2_PA(int n, long long *selected, int max_size, const char *rank_nam
 
 int compute_n2_PA_Greedy_Neighbor_Deletion(int n)
 {
-    bool *S = malloc(total * sizeof(bool));
+    char filename[256];
+    bool *S = malloc(factorial(n) * sizeof(bool));
     int pi[MAX_N], tmp[MAX_N], tmp_inv[MAX_N];
     int *A = malloc(factorial(n) * sizeof(int));
     int size = 0; // Counter to add element in list A
@@ -2458,16 +2519,18 @@ int compute_n2_PA_Greedy_Neighbor_Deletion(int n)
         pi[i] = i;
 
     // Intialize S_n array and set all to true
-    for (long long i = 0; i < factorial(n))
+    for (long long i = 0; i < factorial(n); i++)
     {
         S[i] = true;
     }
 
-    for (long long i = 0, i < factorial(n), i++)
+    for (long long index = 0; index < factorial(n); index++)
     {
-        if (S[i])
+        if (S[index])
         {
-            unrank1(n, i, pi)
+            unrank1(n, index, pi);
+            S[index] = false;
+            A[size++] = index;
         }
         // Transposition neighbor distance 1
         for (int i = 0; i < n; ++i)
@@ -2495,23 +2558,19 @@ int compute_n2_PA_Greedy_Neighbor_Deletion(int n)
 
                     compute_inverse(tmp, tmp_inv, n);
                     int tmp_rank = rank_safe(n, tmp, tmp_inv);
-                    A[size++] = tmp_rank;
 
-                    // Write into files A_n
-                    sprintf(filename, "A_n%d.txt", n);
-                    FILE *fp = fopen(filename, "w");
-
-                    for (int i = 0; i < size; i++)
+                    if (S[tmp_rank])
                     {
-                        fprintf(fp, "%d\n", A[i]);
+                        S[tmp_rank] = false;
                     }
-
-                    S[tmp_rank] = false;
-
-                    fclose(fp);
                 }
-        S[i] = false;
     }
+    // Write into files A_n
+    sprintf(filename, "A_n%d.txt", n);
+    FILE *fp = fopen(filename, "w");
+    for (int i = 0; i < size; i++)
+        fprintf(fp, "%d\n", A[i]);
+    fclose(fp);
     return size;
 }
 
@@ -2934,9 +2993,11 @@ bool verify_n2_PA(int n, const char *rank_name)
 
                     long long tau_rank;
                     if (strcmp(rank_name, "Lex") == 0)
-                        tau_rank = rank_safe(n, tau, tau_inv);
+                        tau_rank = rank_lex(tau, n);
                     else if (strcmp(rank_name, "Lehmer") == 0)
                         tau_rank = rank2_safe(n, tau, tau_inv);
+                    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+                        tau_rank = rank_safe(n, tau, tau_inv);
                     else if (strcmp(rank_name, "SJT") == 0)
                         tau_rank = rankSJT(n, tau);
                     else if (strcmp(rank_name, "ReverseColexOrder") == 0)

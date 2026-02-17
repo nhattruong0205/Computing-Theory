@@ -33,6 +33,8 @@ int *load_D_from_file(int n, long long *size_out, const char *rank_name);
 // === 4. SJT ===
 // === 5 ReverseColexOrder ===
 void swap(int *a, int *b);
+int rank_lex(int pi[], int n);
+void unrank_lex(int n, int r, int pi[]);
 int rank1(int n, int pi[], int pi_inv[]);
 int rank_safe(int n, const int src[], int *inv_buf);
 void unrank1(int n, int r, int pi[]);
