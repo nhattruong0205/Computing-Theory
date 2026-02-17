@@ -3024,7 +3024,7 @@ bool verify_distance_PA(int n, int d)
 
     fclose(fp_A);
 
-    sprintf(D_filename, "/Users/nhattruong/Documents/ComputingTheoryDArraydistance%sRank/distances_n%d.txt", n);
+    sprintf(D_filename, "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLexRank/distances_n%d.txt", n);
     FILE *fp_D = fopen(D_filename, "r");
 
     while (fscanf(fp_D, "%d", &D[D_size]) == 1)
@@ -3040,17 +3040,17 @@ bool verify_distance_PA(int n, int d)
     for (int i; i < A_size; i++)
     {
         unrank_lex(n, A[i], pi);
-        for (int j + 1; j < A_size; j++)
+        for (int j = i + 1; j < A_size; j++)
         {
             unrank_lex(n, A[j], tau);
             int dis = distance_between_2_permutations(n, pi, tau, D);
             if (dis < d)
             {
-                return False;
+                return false;
             }
         }
     }
-    return True;
+    return true;
 }
 
 // bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name)
