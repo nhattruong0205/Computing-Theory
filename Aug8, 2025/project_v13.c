@@ -13,8 +13,9 @@ int *D;
 
 int main()
 {
-    int n = 12;
-    compute_n2_PA_Greedy_Neighbor_Deletion(n);
+    int n = 4;
+    int numOfCodewords = compute_n2_PA_Greedy_Neighbor_Deletion(n);
+    printf("Number of Codewords:%d: ", numOfCodewords);
 }
 
 // int main()

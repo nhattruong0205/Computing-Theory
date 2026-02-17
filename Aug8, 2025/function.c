@@ -2519,51 +2519,61 @@ int compute_n2_PA_Greedy_Neighbor_Deletion(int n)
         pi[i] = i;
 
     // Intialize S_n array and set all to true
-    for (long long i = 0; i < factorial(n); i++)
+    for (int i = 0; i < factorial(n); i++)
     {
         S[i] = true;
     }
 
-    for (long long index = 0; index < factorial(n); index++)
+    for (int index = 0; index < factorial(n); index++)
     {
         if (S[index])
         {
-            unrank1(n, index, pi);
+            unrank_lex(n, index, pi);
             S[index] = false;
             A[size++] = index;
-        }
-        // Transposition neighbor distance 1
-        for (int i = 0; i < n; ++i)
-            for (int j = i + 1; j < n; ++j)
-                for (int k = j; k < n; ++k)
-                {
-                    /* Build translocated permutation */
-                    int idx = 0;
 
-                    // 1. Prefix: [0..i-1]
-                    for (int x = 0; x < i; ++x)
-                        tmp[idx++] = pi[x];
+            printf("Picked: %d -> ", index);
+            for (int x = 0; x < n; x++)
+                printf("%d ", pi[x]);
+            printf("\n");
 
-                    // 2. Block: [j..k]
-                    for (int x = j; x <= k; ++x)
-                        tmp[idx++] = pi[x];
-
-                    // 3. Middle: [i..j-1]
-                    for (int x = i; x < j; ++x)
-                        tmp[idx++] = pi[x];
-
-                    // 4. Suffix: [k+1..n-1]
-                    for (int x = k + 1; x < n; ++x)
-                        tmp[idx++] = pi[x];
-
-                    compute_inverse(tmp, tmp_inv, n);
-                    int tmp_rank = rank_safe(n, tmp, tmp_inv);
-
-                    if (S[tmp_rank])
+            // Transposition neighbor distance 1
+            for (int i = 0; i < n; ++i)
+                for (int j = i + 1; j < n; ++j)
+                    for (int k = j; k < n; ++k)
                     {
-                        S[tmp_rank] = false;
+                        /* Build translocated permutation */
+                        int idx = 0;
+
+                        // 1. Prefix: [0..i-1]
+                        for (int x = 0; x < i; ++x)
+                            tmp[idx++] = pi[x];
+
+                        // 2. Block: [j..k]
+                        for (int x = j; x <= k; ++x)
+                            tmp[idx++] = pi[x];
+
+                        // 3. Middle: [i..j-1]
+                        for (int x = i; x < j; ++x)
+                            tmp[idx++] = pi[x];
+
+                        // 4. Suffix: [k+1..n-1]
+                        for (int x = k + 1; x < n; ++x)
+                            tmp[idx++] = pi[x];
+
+                        int tmp_rank = rank_lex(tmp, n);
+
+                        printf("  neighbor rank: %d -> ", tmp_rank);
+                        for (int x = 0; x < n; x++)
+                            printf("%d ", tmp[x]);
+                        printf("\n");
+
+                        if (S[tmp_rank])
+                        {
+                            S[tmp_rank] = false;
+                        }
                     }
-                }
+        }
     }
     // Write into files A_n
     sprintf(filename, "A_n%d.txt", n);
