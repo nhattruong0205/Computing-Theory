@@ -13,9 +13,22 @@ int *D;
 
 int main()
 {
-    int n = 4;
+    int n;
+    printf("Enter n: ");
+    scanf("%d", &n);
+
     int numOfCodewords = compute_n2_PA_Greedy_Neighbor_Deletion(n);
     printf("Number of Codewords:%d: ", numOfCodewords);
+
+    int d;
+    printf("Enter d: ");
+    scanf("%d", &d);
+    bool pass = verify_distance_PA(n, d);
+    if (pass)
+    {
+        printf("Valid PA");
+    }
+    return 0;
 }
 
 // int main()

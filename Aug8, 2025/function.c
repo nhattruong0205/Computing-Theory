@@ -1219,7 +1219,7 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name)
 
 // ================== Computing PAs =========================
 // Compute distance between two permutations pi and sigma
-int distance_between_2_permutations(int n, int *pi, int *sigma, int *D, const char *rank_name)
+int distance_between_2_permutations(int n, int *pi, int *sigma, int *D)
 {
     int pi_inv[MAX_N];
     compute_inverse(pi, pi_inv, n);
@@ -1236,16 +1236,7 @@ int distance_between_2_permutations(int n, int *pi, int *sigma, int *D, const ch
     compute_inverse(composed, composed_inv, n);
 
     int r;
-    if (strcmp(rank_name, "Lex") == 0)
-        r = rank_lex(composed, n);
-    else if (strcmp(rank_name, "Lehmer") == 0)
-        r = rank2_safe(n, composed, composed_inv);
-    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-        r = rank_safe(n, composed, composed_inv);
-    else if (strcmp(rank_name, "SJT") == 0)
-        r = rankSJT(n, composed);
-    else if (strcmp(rank_name, "ReverseColexOrder") == 0)
-        r = rankReverseColexOrder(n, composed);
+    r = rank_lex(composed, n);
 
     return D[r]; // lookup precomputed distance
 }
@@ -1298,28 +1289,8 @@ long long T_n_d(int n, int d, int *D, const char *rank_name)
                     // Convert rank j to permutation sigma
                     initialize_identity_permutation(sigma, n);
 
-                    if (strcmp(rank_name, "Lex") == 0)
-                    {
-                        unrank1(n, (int)j, sigma);
-                        dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
-                    }
-                    else if (strcmp(rank_name, "Lehmer") == 0)
-                    {
-                        unrank2(n, (int)j, pi);
-                        dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
-                    }
-                    else if (strcmp(rank_name, "SJT") == 0)
-                    {
-                        unrankSJT(n, (int)j, sigma, result_dir);
-                        // Compute distance between pi and sigma
-                        dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
-                    }
-                    else if (strcmp(rank_name, "ReverseColexOrder") == 0)
-                    {
-                        unrankReverseColexOrder(n, (int)j, sigma);
-                        // Compute distance between pi and sigma
-                        dist = distance_between_2_permutations(n, pi, sigma, D, rank_name);
-                    }
+                    unrank1(n, (int)j, sigma);
+                    dist = distance_between_2_permutations(n, pi, sigma, D);
 
                     // If distance < d, forbid this permutation
                     if (dist < d)
@@ -2510,7 +2481,7 @@ int compute_n2_PA_Greedy_Neighbor_Deletion(int n)
 {
     char filename[256];
     bool *S = malloc(factorial(n) * sizeof(bool));
-    int pi[MAX_N], tmp[MAX_N], tmp_inv[MAX_N];
+    int pi[MAX_N], tmp[MAX_N];
     int *A = malloc(factorial(n) * sizeof(int));
     int size = 0; // Counter to add element in list A
 
@@ -2563,10 +2534,10 @@ int compute_n2_PA_Greedy_Neighbor_Deletion(int n)
 
                         int tmp_rank = rank_lex(tmp, n);
 
-                        printf("  neighbor rank: %d -> ", tmp_rank);
-                        for (int x = 0; x < n; x++)
-                            printf("%d ", tmp[x]);
-                        printf("\n");
+                        // printf("  neighbor rank: %d -> ", tmp_rank);
+                        // for (int x = 0; x < n; x++)
+                        //     printf("%d ", tmp[x]);
+                        // printf("\n");
 
                         if (S[tmp_rank])
                         {
@@ -3034,6 +3005,52 @@ bool verify_n2_PA(int n, const char *rank_name)
     printf("All checks passed!\n");
     free(selected);
     return true;
+}
+
+bool verify_distance_PA(int n, int d)
+{
+    char A_filename[256], D_filename[256];
+    int pi[MAX_N], tau[MAX_N];
+    int *A = malloc(factorial(n) * sizeof(int));
+    int *D = malloc(factorial(n) * sizeof(int));
+    int A_size = 0;
+    int D_size = 0;
+
+    sprintf(A_filename, "A_n%d.txt", n);
+    FILE *fp_A = fopen(A_filename, "r");
+
+    while (fscanf(fp_A, "%d", &A[A_size]) == 1)
+        A_size++;
+
+    fclose(fp_A);
+
+    sprintf(D_filename, "/Users/nhattruong/Documents/ComputingTheoryDArraydistance%sRank/distances_n%d.txt", n);
+    FILE *fp_D = fopen(D_filename, "r");
+
+    while (fscanf(fp_D, "%d", &D[D_size]) == 1)
+        D_size++;
+
+    fclose(fp_D);
+
+    // Initialize identity permutation
+    for (int i = 0; i < n; i++)
+        pi[i] = i;
+
+    printf("Starting verifying");
+    for (int i; i < A_size; i++)
+    {
+        unrank_lex(n, A[i], pi);
+        for (int j + 1; j < A_size; j++)
+        {
+            unrank_lex(n, A[j], tau);
+            int dis = distance_between_2_permutations(n, pi, tau, D);
+            if (dis < d)
+            {
+                return False;
+            }
+        }
+    }
+    return True;
 }
 
 // bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name)

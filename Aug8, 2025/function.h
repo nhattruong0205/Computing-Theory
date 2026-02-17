@@ -91,7 +91,7 @@ int *ComputeTDistanceFromIdentity(int n, const char *rank_name);
 
 // ================== Computing PAs =========================
 // Computing distance between 2 permutation using different rankings (rank_name)
-int distance_between_2_permutations(int n, int *pi, int *sigma, int *D, const char *rank_name);
+int distance_between_2_permutations(int n, int *pi, int *sigma, int *D);
 
 // Computing T(n,d) PA - an array A of permutation on [1..n] with dt(A) >= d.
 long long T_n_d(int n, int d, int *D, const char *rank_name); // Using Lehmer Ascending Radix ranking
@@ -126,6 +126,7 @@ bool next_permutation(int *arr, int n);
 // =========== Verify (n,2)-PA
 // bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name);
 bool verify_n2_PA(int n, const char *rank_name);
+bool verify_distance_PA(int n, int d);
 
 // ============== Check if bad permutation =====================================
 #endif /* FUNCTION_H */
