@@ -17,16 +17,20 @@ int main()
     printf("Enter n: ");
     scanf("%d", &n);
 
-    int numOfCodewords = compute_n2_PA_Greedy_Neighbor_Deletion(n);
-    printf("Number of Codewords:%d: ", numOfCodewords);
+    // int numOfCodewords = compute_n2_PA_Greedy_Neighbor_Deletion(n);
+    // printf("Number of Codewords: %d", numOfCodewords);
 
     int d;
     printf("Enter d: ");
-    scanf("%d", &d);
+    scanf("\n%d", &d);
     bool pass = verify_distance_PA(n, d);
     if (pass)
     {
-        printf("Valid PA");
+        printf("\nValid PA\n");
+    }
+    else
+    {
+        printf("Not valid\n");
     }
     return 0;
 }

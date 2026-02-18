@@ -75,7 +75,6 @@ void print_array(int arr[], int n)
         printf("%d ", arr[i]);
     }
     printf("]");
-    printf("\n");
 }
 
 // Helper to compute inverse permutation
@@ -3036,8 +3035,9 @@ bool verify_distance_PA(int n, int d)
     for (int i = 0; i < n; i++)
         pi[i] = i;
 
-    printf("Starting verifying");
-    for (int i; i < A_size; i++)
+    printf("========Starting verifying==========");
+
+    for (int i = 0; i < A_size; i++)
     {
         unrank_lex(n, A[i], pi);
         for (int j = i + 1; j < A_size; j++)
@@ -3046,12 +3046,61 @@ bool verify_distance_PA(int n, int d)
             int dis = distance_between_2_permutations(n, pi, tau, D);
             if (dis < d)
             {
+                printf("\nPermutation ");
+                print_array(pi, n);
+                printf(" at index %d violates with ", A[i]);
+                print_array(tau, n);
+                printf("at index %d\n", A[j]);
                 return false;
             }
         }
     }
     return true;
 }
+
+// bool verify_distance_PA(int n, int d)
+// {
+//     char D_filename[256];
+//     int pi[MAX_N], tau[MAX_N];
+//     int *D = malloc(factorial(n) * sizeof(int));
+//     int D_size = 0;
+
+//     sprintf(D_filename, "/Users/nhattruong/Documents/ComputingTheoryDArraydistanceLexRank/distances_n%d.txt", n);
+//     FILE *fp_D = fopen(D_filename, "r");
+
+//     while (fscanf(fp_D, "%d", &D[D_size]) == 1)
+//         D_size++;
+
+//     fclose(fp_D);
+
+//     // Initialize identity permutation
+//     for (int i = 0; i < n; i++)
+//         pi[i] = i;
+
+//     int A[] = {0, 29, 86, 119};
+//     int A_size = 3;
+
+//     printf("========Starting verifying==========");
+//     for (int i = 0; i < A_size; i++)
+//     {
+//         unrank_lex(n, A[i], pi);
+//         for (int j = i + 1; j < A_size; j++)
+//         {
+//             unrank_lex(n, A[j], tau);
+//             int dis = distance_between_2_permutations(n, pi, tau, D);
+//             if (dis < d)
+//             {
+//                 printf("\nPermutation ");
+//                 print_array(pi, n);
+//                 printf(" at index %d violates with ", A[i]);
+//                 print_array(tau, n);
+//                 printf("at index %d\n", A[j]);
+//                 return false;
+//             }
+//         }
+//     }
+//     return true;
+// }
 
 // bool verify_n2_PA(int n, int perms[][n], int num_perms, const char *rank_name)
 // {
