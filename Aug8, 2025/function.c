@@ -2847,164 +2847,164 @@ int compute_n2_PA_Greedy_Neighbor_Deletion(int n)
 //     return code_size;
 // }
 
-bool verify_n2_PA(int n, const char *rank_name)
-{
-    char checkpoint_file[256];
-    snprintf(checkpoint_file, sizeof(checkpoint_file), "checkpoint_n%d.txt", n);
+// bool verify_n2_PA(int n, const char *rank_name)
+// {
+//     char checkpoint_file[256];
+//     snprintf(checkpoint_file, sizeof(checkpoint_file), "checkpoint_n%d.txt", n);
 
-    // Calculate total permutations
-    long long total_perms = 1;
-    for (int i = 1; i <= n; i++)
-        total_perms *= i;
+//     // Calculate total permutations
+//     long long total_perms = 1;
+//     for (int i = 1; i <= n; i++)
+//         total_perms *= i;
 
-    // Open checkpoint file
-    FILE *fp = fopen(checkpoint_file, "r");
-    if (fp == NULL)
-    {
-        printf("Error: Checkpoint file not found!\n");
-        return false;
-    }
+//     // Open checkpoint file
+//     FILE *fp = fopen(checkpoint_file, "r");
+//     if (fp == NULL)
+//     {
+//         printf("Error: Checkpoint file not found!\n");
+//         return false;
+//     }
 
-    // Read code size
-    int num_perms;
-    fscanf(fp, "%d\n", &num_perms);
+//     // Read code size
+//     int num_perms;
+//     fscanf(fp, "%d\n", &num_perms);
 
-    // Allocate memory for ranks
-    long long *selected = (long long *)malloc(num_perms * sizeof(long long));
-    if (!selected)
-    {
-        printf("Error: Memory allocation failed!\n");
-        fclose(fp);
-        return false;
-    }
+//     // Allocate memory for ranks
+//     long long *selected = (long long *)malloc(num_perms * sizeof(long long));
+//     if (!selected)
+//     {
+//         printf("Error: Memory allocation failed!\n");
+//         fclose(fp);
+//         return false;
+//     }
 
-    // Read ONLY the code_size ranks (NOT the last_checked marker)
-    for (int i = 0; i < num_perms; i++)
-    {
-        fscanf(fp, "%lld\n", &selected[i]);
-    }
-    // printf("Loaded codeword ranks:\n");
-    // for (int i = 0; i < num_perms; i++)
-    // {
-    //     printf("  A[%d] = %lld\n", i, selected[i]);
-    // }
-    // We don't read the last line (progress marker) - it's not a codeword
-    fclose(fp);
+//     // Read ONLY the code_size ranks (NOT the last_checked marker)
+//     for (int i = 0; i < num_perms; i++)
+//     {
+//         fscanf(fp, "%lld\n", &selected[i]);
+//     }
+//     // printf("Loaded codeword ranks:\n");
+//     // for (int i = 0; i < num_perms; i++)
+//     // {
+//     //     printf("  A[%d] = %lld\n", i, selected[i]);
+//     // }
+//     // We don't read the last line (progress marker) - it's not a codeword
+//     fclose(fp);
 
-    printf("Verifying %d permutations...\n", num_perms);
+//     printf("Verifying %d permutations...\n", num_perms);
 
-    // Validate all selected ranks
-    for (int i = 0; i < num_perms; i++)
-    {
-        if (selected[i] >= total_perms || selected[i] < 0)
-        {
-            printf("Error: Invalid rank at position %d: %lld (max is %lld)\n",
-                   i, selected[i], total_perms - 1);
-            free(selected);
-            return false;
-        }
-    }
+//     // Validate all selected ranks
+//     for (int i = 0; i < num_perms; i++)
+//     {
+//         if (selected[i] >= total_perms || selected[i] < 0)
+//         {
+//             printf("Error: Invalid rank at position %d: %lld (max is %lld)\n",
+//                    i, selected[i], total_perms - 1);
+//             free(selected);
+//             return false;
+//         }
+//     }
 
-    // Sort the ranks array for binary search
-    qsort(selected, num_perms, sizeof(long long), compare_long_long);
+//     // Sort the ranks array for binary search
+//     qsort(selected, num_perms, sizeof(long long), compare_long_long);
 
-    // Step 2: Check for duplicates
-    for (int i = 0; i < num_perms - 1; i++)
-    {
-        if (selected[i] == selected[i + 1])
-        {
-            printf("Error: Found duplicate rank %lld at positions %d and %d\n",
-                   selected[i], i, i + 1);
-            free(selected);
-            return false;
-        }
-    }
+//     // Step 2: Check for duplicates
+//     for (int i = 0; i < num_perms - 1; i++)
+//     {
+//         if (selected[i] == selected[i + 1])
+//         {
+//             printf("Error: Found duplicate rank %lld at positions %d and %d\n",
+//                    selected[i], i, i + 1);
+//             free(selected);
+//             return false;
+//         }
+//     }
 
-    printf("No duplicates found. Checking transpositions...\n");
+//     printf("No duplicates found. Checking transpositions...\n");
 
-    // Step 5-9: For each permutation, check all transpositions
-    for (int perm_idx = 0; perm_idx < num_perms; perm_idx++)
-    {
-        // Unrank to get the permutation
-        int pi[MAX_N];
-        for (int i = 0; i < n; i++)
-        {
-            pi[i] = i;
-        }
-        unrank1(n, selected[perm_idx], pi);
+//     // Step 5-9: For each permutation, check all transpositions
+//     for (int perm_idx = 0; perm_idx < num_perms; perm_idx++)
+//     {
+//         // Unrank to get the permutation
+//         int pi[MAX_N];
+//         for (int i = 0; i < n; i++)
+//         {
+//             pi[i] = i;
+//         }
+//         unrank1(n, selected[perm_idx], pi);
 
-        // Progress indicator
-        if ((perm_idx + 1) % 100 == 0 || perm_idx == 0)
-        {
-            printf("Checking permutation %d/%d (rank %lld)...\n",
-                   perm_idx + 1, num_perms, selected[perm_idx]);
-        }
+//         // Progress indicator
+//         if ((perm_idx + 1) % 100 == 0 || perm_idx == 0)
+//         {
+//             printf("Checking permutation %d/%d (rank %lld)...\n",
+//                    perm_idx + 1, num_perms, selected[perm_idx]);
+//         }
 
-        // Step 6: Generate all (i,j,k)-transpositions
-        for (int i = 0; i < n; i++)
-        {
-            for (int j = i + 1; j < n; j++)
-            {
-                for (int k = j; k < n; k++)
-                {
-                    // Step 7: Build transposed permutation τ
-                    int tau[MAX_N];
-                    int idx = 0;
+//         // Step 6: Generate all (i,j,k)-transpositions
+//         for (int i = 0; i < n; i++)
+//         {
+//             for (int j = i + 1; j < n; j++)
+//             {
+//                 for (int k = j; k < n; k++)
+//                 {
+//                     // Step 7: Build transposed permutation τ
+//                     int tau[MAX_N];
+//                     int idx = 0;
 
-                    // 1. Prefix: [0..i-1]
-                    for (int x = 0; x < i; x++)
-                        tau[idx++] = pi[x];
+//                     // 1. Prefix: [0..i-1]
+//                     for (int x = 0; x < i; x++)
+//                         tau[idx++] = pi[x];
 
-                    // 2. Block: [j..k]
-                    for (int x = j; x <= k; x++)
-                        tau[idx++] = pi[x];
+//                     // 2. Block: [j..k]
+//                     for (int x = j; x <= k; x++)
+//                         tau[idx++] = pi[x];
 
-                    // 3. Middle: [i..j-1]
-                    for (int x = i; x < j; x++)
-                        tau[idx++] = pi[x];
+//                     // 3. Middle: [i..j-1]
+//                     for (int x = i; x < j; x++)
+//                         tau[idx++] = pi[x];
 
-                    // 4. Suffix: [k+1..n-1]
-                    for (int x = k + 1; x < n; x++)
-                        tau[idx++] = pi[x];
+//                     // 4. Suffix: [k+1..n-1]
+//                     for (int x = k + 1; x < n; x++)
+//                         tau[idx++] = pi[x];
 
-                    // Compute rank of τ
-                    int tau_inv[MAX_N];
-                    compute_inverse(tau, tau_inv, n);
+//                     // Compute rank of τ
+//                     int tau_inv[MAX_N];
+//                     compute_inverse(tau, tau_inv, n);
 
-                    long long tau_rank;
-                    if (strcmp(rank_name, "Lex") == 0)
-                        tau_rank = rank_lex(tau, n);
-                    else if (strcmp(rank_name, "Lehmer") == 0)
-                        tau_rank = rank2_safe(n, tau, tau_inv);
-                    else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
-                        tau_rank = rank_safe(n, tau, tau_inv);
-                    else if (strcmp(rank_name, "SJT") == 0)
-                        tau_rank = rankSJT(n, tau);
-                    else if (strcmp(rank_name, "ReverseColexOrder") == 0)
-                        tau_rank = rankReverseColexOrder(n, tau);
+//                     long long tau_rank;
+//                     if (strcmp(rank_name, "Lex") == 0)
+//                         tau_rank = rank_lex(tau, n);
+//                     else if (strcmp(rank_name, "Lehmer") == 0)
+//                         tau_rank = rank2_safe(n, tau, tau_inv);
+//                     else if (strcmp(rank_name, "LehmerAscendingRadix") == 0)
+//                         tau_rank = rank_safe(n, tau, tau_inv);
+//                     else if (strcmp(rank_name, "SJT") == 0)
+//                         tau_rank = rankSJT(n, tau);
+//                     else if (strcmp(rank_name, "ReverseColexOrder") == 0)
+//                         tau_rank = rankReverseColexOrder(n, tau);
 
-                    // Step 8: Binary search for τ in A
-                    // If found, it means a transposition is in the code - INVALID!
-                    if (is_rank_in_selected(selected, num_perms, tau_rank))
-                    {
-                        printf("Error: Found transposition in code!\n");
-                        printf("Permutation at index %d (rank %lld): ", perm_idx, selected[perm_idx]);
-                        print_array(pi, n);
-                        printf("Transposition (i=%d, j=%d, k=%d) with rank %lld: ", i, j, k, tau_rank);
-                        print_array(tau, n);
-                        free(selected);
-                        return false;
-                    }
-                }
-            }
-        }
-    }
+//                     // Step 8: Binary search for τ in A
+//                     // If found, it means a transposition is in the code - INVALID!
+//                     if (is_rank_in_selected(selected, num_perms, tau_rank))
+//                     {
+//                         printf("Error: Found transposition in code!\n");
+//                         printf("Permutation at index %d (rank %lld): ", perm_idx, selected[perm_idx]);
+//                         print_array(pi, n);
+//                         printf("Transposition (i=%d, j=%d, k=%d) with rank %lld: ", i, j, k, tau_rank);
+//                         print_array(tau, n);
+//                         free(selected);
+//                         return false;
+//                     }
+//                 }
+//             }
+//         }
+//     }
 
-    // Step 10: All checks passed
-    printf("All checks passed!\n");
-    free(selected);
-    return true;
-}
+//     // Step 10: All checks passed
+//     printf("All checks passed!\n");
+//     free(selected);
+//     return true;
+// }
 
 bool verify_distance_PA(int n, int d)
 {
@@ -3050,7 +3050,7 @@ bool verify_distance_PA(int n, int d)
                 print_array(pi, n);
                 printf(" at index %d violates with ", A[i]);
                 print_array(tau, n);
-                printf("at index %d\n", A[j]);
+                printf(" at index %d\n", A[j]);
                 return false;
             }
         }
